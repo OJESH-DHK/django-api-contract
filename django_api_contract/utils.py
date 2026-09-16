@@ -130,3 +130,10 @@ def humanize(segment: str) -> str:
     if not cleaned:
         return segment
     return cleaned[:1].upper() + cleaned[1:]
+
+
+def content_hash(value: Any) -> str:
+    """Short stable hash of a JSON value, used to detect manual edits."""
+    import hashlib
+
+    return hashlib.sha256(canonical(value).encode("utf-8")).hexdigest()[:16]
