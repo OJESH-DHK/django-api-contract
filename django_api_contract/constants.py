@@ -43,3 +43,9 @@ AUTH_VARIABLES = {
 }
 
 UNGROUPED_FOLDER = "Default"
+
+# A rename is applied automatically at or above this score and only reported
+# between RENAME_SIMILARITY_THRESHOLD and this value.
+CONFIDENT_RENAME_SCORE = 0.9
+
+ARCHIVED_SUFFIX = " [removed from API]"

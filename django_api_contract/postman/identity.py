@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional
 
 from ..constants import UNGROUPED_FOLDER
 from ..schema.normalizer import iter_operations
-from ..utils import canonical, normalize_path, path_shape, similarity
+from ..utils import canonical, content_hash, normalize_path, path_shape, similarity
 
 
 def identity_string(method: str, path: str) -> str:
@@ -48,9 +48,27 @@ class OperationIdentity:
 
     @property
     def request_fingerprint(self) -> str:
+        """Canonical request contract, ignoring path parameter names.
+
+        Renaming ``{id}`` to ``{public_id}`` leaves the actual contract
+        untouched, so the name is replaced by its position. Query and header
+        parameter names are part of the contract and are kept.
+        """
+        parameters = []
+        position = 0
+        for parameter in self.operation.get("parameters", []) or []:
+            if not isinstance(parameter, dict):
+                continue
+            if parameter.get("in") == "path":
+                anonymous = {k: v for k, v in parameter.items() if k != "name"}
+                anonymous["name"] = f"<path:{position}>"
+                position += 1
+                parameters.append(anonymous)
+            else:
+                parameters.append(parameter)
         return canonical(
             {
-                "parameters": self.operation.get("parameters", []),
+                "parameters": parameters,
                 "requestBody": self.operation.get("requestBody", {}),
             }
         )
@@ -107,3 +125,67 @@ def index_by_operation_id(
         for item in identities
         if item.operation_id and counts[item.operation_id] == 1
     }
+
+
+@dataclass
+class PreviousOperation:
+    """An operation as recorded in an existing Postman collection.
+
+    Only the metadata this package wrote is available, which is why the
+    fingerprints are stored at generation time rather than recomputed.
+    """
+
+    method: str
+    path: str
+    operation_id: Optional[str] = None
+    request_fingerprint: Optional[str] = None
+    response_fingerprint: Optional[str] = None
+
+    @classmethod
+    def from_metadata(cls, data: Dict[str, Any]) -> Optional["PreviousOperation"]:
+        method = data.get("method")
+        path = data.get("path")
+        if not method or not path:
+            return None
+        return cls(
+            method=str(method).lower(),
+            path=str(path),
+            operation_id=data.get("operation_id") or None,
+            request_fingerprint=data.get("request_fingerprint"),
+            response_fingerprint=data.get("response_fingerprint"),
+        )
+
+    @property
+    def identity(self) -> str:
+        return identity_string(self.method, self.path)
+
+    @property
+    def shape(self) -> str:
+        return f"{self.method.upper()} {path_shape(self.path)}"
+
+    def score_against(self, candidate: OperationIdentity) -> float:
+        """Confidence that ``candidate`` is this operation after a rename."""
+        if self.method != candidate.method:
+            return 0.0
+
+        shape_score = (
+            1.0 if self.shape == candidate.shape else similarity(self.shape, candidate.shape)
+        )
+        request_score = (
+            1.0
+            if self.request_fingerprint
+            and self.request_fingerprint == content_hash(candidate.request_fingerprint)
+            else 0.0
+        )
+        response_score = (
+            1.0
+            if self.response_fingerprint
+            and self.response_fingerprint == content_hash(candidate.response_fingerprint)
+            else 0.0
+        )
+        path_score = similarity(normalize_path(self.path), normalize_path(candidate.path))
+
+        return round(
+            0.40 * shape_score + 0.25 * request_score + 0.15 * response_score + 0.20 * path_score,
+            4,
+        )

@@ -289,6 +289,8 @@ def build_request_item(
             "identity": identity.identity,
             "method": identity.method.upper(),
             "path": identity.path,
+            "request_fingerprint": content_hash(identity.request_fingerprint),
+            "response_fingerprint": content_hash(identity.response_fingerprint),
             # Hashes of the fields this package owns. A later run compares them
             # against the file on disk to tell a manual edit from a stale value.
             "generated": {
