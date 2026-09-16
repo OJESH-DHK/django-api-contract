@@ -81,7 +81,8 @@ def test_pagination_parameters_are_present(schema):
 def test_iter_operations_is_ordered(schema):
     operations = iter_operations(schema)
     assert operations == sorted(
-        operations, key=lambda entry: (entry[0], ["get", "post", "put", "patch", "delete"].index(entry[1]))
+        operations,
+        key=lambda entry: (entry[0], ["get", "post", "put", "patch", "delete"].index(entry[1])),
     )
 
 

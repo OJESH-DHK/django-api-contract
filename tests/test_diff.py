@@ -144,7 +144,9 @@ def test_adding_a_request_enum_value_is_non_breaking():
 
 
 def test_adding_a_response_enum_value_is_flagged_as_possible():
-    old = make_schema(response={"type": "object", "properties": {"s": {"enum": ["a"], "type": "string"}}})
+    old = make_schema(
+        response={"type": "object", "properties": {"s": {"enum": ["a"], "type": "string"}}}
+    )
     new = make_schema(
         response={"type": "object", "properties": {"s": {"enum": ["a", "b"], "type": "string"}}}
     )
@@ -155,9 +157,7 @@ def test_adding_a_response_enum_value_is_flagged_as_possible():
 
 def test_new_optional_query_parameter_is_non_breaking():
     old = make_schema()
-    new = make_schema(
-        parameters=[{"name": "page", "in": "query", "schema": {"type": "integer"}}]
-    )
+    new = make_schema(parameters=[{"name": "page", "in": "query", "schema": {"type": "integer"}}])
     assert compare_schemas(old, new).breaking == []
 
 
@@ -208,9 +208,7 @@ def test_nullable_removal_in_a_response_is_breaking():
 def test_nested_object_fields_are_compared():
     nested = {
         "type": "object",
-        "properties": {
-            "address": {"type": "object", "properties": {"city": {"type": "string"}}}
-        },
+        "properties": {"address": {"type": "object", "properties": {"city": {"type": "string"}}}},
     }
     old = make_schema(properties=nested["properties"])
     new = copy.deepcopy(nested["properties"])
@@ -221,10 +219,20 @@ def test_nested_object_fields_are_compared():
 
 def test_array_items_are_compared():
     old = make_schema(
-        properties={"tags": {"type": "array", "items": {"type": "object", "properties": {"n": {"type": "string"}}}}}
+        properties={
+            "tags": {
+                "type": "array",
+                "items": {"type": "object", "properties": {"n": {"type": "string"}}},
+            }
+        }
     )
     new = make_schema(
-        properties={"tags": {"type": "array", "items": {"type": "object", "properties": {"n": {"type": "integer"}}}}}
+        properties={
+            "tags": {
+                "type": "array",
+                "items": {"type": "object", "properties": {"n": {"type": "integer"}}},
+            }
+        }
     )
     assert compare_schemas(old, new).breaking
 

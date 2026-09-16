@@ -7,12 +7,15 @@ from django.core.management import call_command
 from django.core.management.base import CommandError
 
 from django_api_contract import service
-from django_api_contract.exceptions import PostmanSyncError, SchemaGenerationError
+from django_api_contract.exceptions import (
+    PostmanSyncError,
+    SchemaGenerationError,
+    SchemaValidationError,
+)
 from django_api_contract.postman import build_collection, synchronize_collection
 from django_api_contract.utils import atomic_write, load_json
-from django_api_contract.schema import generate_schema
 
-from .conftest import all_items, find_item, identities
+from .conftest import all_items, identities
 
 EMPTY_SCHEMA = {
     "openapi": "3.0.3",
@@ -105,9 +108,7 @@ def test_recursive_schema_does_not_hang(settings_obj):
         "post": {
             "operationId": "node-create",
             "requestBody": {
-                "content": {
-                    "application/json": {"schema": {"$ref": "#/components/schemas/Node"}}
-                }
+                "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Node"}}}
             },
             "responses": {"201": {"description": "created"}},
         }
@@ -168,7 +169,7 @@ def test_invalid_schema_stops_before_writing(settings_obj, monkeypatch):
         return {"openapi": "3.0.3", "info": {}, "paths": {"bad": {}}}
 
     monkeypatch.setattr(service, "generate_schema", invalid)
-    with pytest.raises(Exception):
+    with pytest.raises(SchemaValidationError):
         service.build_contract(settings_obj)
     assert load_json(settings_obj.openapi_path) == {"kept": True}
 
@@ -263,5 +264,6 @@ def test_generated_files_end_with_a_newline(settings_obj):
 def test_unknown_setting_is_rejected():
     from django_api_contract.conf import ContractSettings
 
+    settings = ContractSettings()
     with pytest.raises(AttributeError):
-        ContractSettings().NOT_A_SETTING
+        settings.NOT_A_SETTING  # noqa: B018

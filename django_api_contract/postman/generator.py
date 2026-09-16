@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from ..conf import ContractSettings, contract_settings
 from ..constants import (
@@ -20,7 +20,7 @@ from .identity import OperationIdentity, build_identities
 _PATH_PARAM_RE = re.compile(r"\{([^}]+)\}")
 
 
-def _postman_path(path: str) -> List[str]:
+def _postman_path(path: str) -> list[str]:
     """Convert ``/customers/{public_id}/`` to Postman's ``:public_id`` form."""
     segments = []
     for segment in path_segments(path):
@@ -30,7 +30,9 @@ def _postman_path(path: str) -> List[str]:
     return segments
 
 
-def _parameters(operation: Dict[str, Any], root: Dict[str, Any], location: str) -> List[Dict[str, Any]]:
+def _parameters(
+    operation: dict[str, Any], root: dict[str, Any], location: str
+) -> list[dict[str, Any]]:
     resolved = []
     for parameter in operation.get("parameters") or []:
         if not isinstance(parameter, dict):
@@ -42,7 +44,7 @@ def _parameters(operation: Dict[str, Any], root: Dict[str, Any], location: str) 
     return sorted(resolved, key=lambda p: str(p.get("name", "")))
 
 
-def _parameter_value(parameter: Dict[str, Any], root: Dict[str, Any]) -> str:
+def _parameter_value(parameter: dict[str, Any], root: dict[str, Any]) -> str:
     value = example_for(parameter.get("schema") or {}, root, for_request=True)
     if value is None:
         return ""
@@ -52,14 +54,14 @@ def _parameter_value(parameter: Dict[str, Any], root: Dict[str, Any]) -> str:
 
 
 def _url(
-    identity: OperationIdentity, root: Dict[str, Any], settings: ContractSettings
-) -> Dict[str, Any]:
+    identity: OperationIdentity, root: dict[str, Any], settings: ContractSettings
+) -> dict[str, Any]:
     base = "{{" + settings.BASE_URL_VARIABLE + "}}"
     segments = _postman_path(identity.path)
 
-    query: List[Dict[str, Any]] = []
+    query: list[dict[str, Any]] = []
     for parameter in _parameters(identity.operation, root, "query"):
-        entry: Dict[str, Any] = {
+        entry: dict[str, Any] = {
             "key": str(parameter.get("name", "")),
             "value": _parameter_value(parameter, root),
         }
@@ -69,7 +71,7 @@ def _url(
             entry["disabled"] = True
         query.append(entry)
 
-    variables: List[Dict[str, Any]] = []
+    variables: list[dict[str, Any]] = []
     for parameter in _parameters(identity.operation, root, "path"):
         entry = {
             "key": str(parameter.get("name", "")),
@@ -85,7 +87,7 @@ def _url(
         if enabled:
             raw += "?" + "&".join(f"{item['key']}={item['value']}" for item in enabled)
 
-    url: Dict[str, Any] = {"raw": raw, "host": [base], "path": segments}
+    url: dict[str, Any] = {"raw": raw, "host": [base], "path": segments}
     if query:
         url["query"] = query
     if variables:
@@ -93,7 +95,7 @@ def _url(
     return url
 
 
-def _pick_media_type(content: Dict[str, Any]) -> Optional[str]:
+def _pick_media_type(content: dict[str, Any]) -> str | None:
     for media_type in SUPPORTED_BODY_MEDIA_TYPES:
         if media_type in content:
             return media_type
@@ -101,8 +103,8 @@ def _pick_media_type(content: Dict[str, Any]) -> Optional[str]:
 
 
 def _body(
-    identity: OperationIdentity, root: Dict[str, Any], settings: ContractSettings
-) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
+    identity: OperationIdentity, root: dict[str, Any], settings: ContractSettings
+) -> tuple[dict[str, Any] | None, str | None]:
     request_body = identity.operation.get("requestBody")
     if isinstance(request_body, dict) and "$ref" in request_body:
         request_body = resolve_ref(root, request_body["$ref"]) or {}
@@ -148,11 +150,11 @@ def _body(
 
 
 def _headers(
-    identity: OperationIdentity, root: Dict[str, Any], body_media_type: Optional[str]
-) -> List[Dict[str, Any]]:
-    headers: List[Dict[str, Any]] = []
+    identity: OperationIdentity, root: dict[str, Any], body_media_type: str | None
+) -> list[dict[str, Any]]:
+    headers: list[dict[str, Any]] = []
     for parameter in _parameters(identity.operation, root, "header"):
-        entry: Dict[str, Any] = {
+        entry: dict[str, Any] = {
             "key": str(parameter.get("name", "")),
             "value": _parameter_value(parameter, root),
         }
@@ -172,7 +174,7 @@ def _headers(
     return sorted(headers, key=lambda item: item["key"])
 
 
-def _response_media_type(operation: Dict[str, Any]) -> Optional[str]:
+def _response_media_type(operation: dict[str, Any]) -> str | None:
     responses = operation.get("responses")
     if not isinstance(responses, dict):
         return None
@@ -185,7 +187,7 @@ def _response_media_type(operation: Dict[str, Any]) -> Optional[str]:
     return None
 
 
-def _auth_for_scheme(name: str, scheme: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+def _auth_for_scheme(name: str, scheme: dict[str, Any]) -> dict[str, Any] | None:
     """Map an OpenAPI security scheme onto Postman auth.
 
     Values are always collection variables so that no real secret is written
@@ -223,8 +225,8 @@ def _auth_for_scheme(name: str, scheme: Dict[str, Any]) -> Optional[Dict[str, An
 _SCHEME_PRIORITY = {"http": 0, "apiKey": 1, "oauth2": 2, "openIdConnect": 3}
 
 
-def _collection_auth(root: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-    schemes = ((root.get("components") or {}).get("securitySchemes") or {})
+def _collection_auth(root: dict[str, Any]) -> dict[str, Any] | None:
+    schemes = (root.get("components") or {}).get("securitySchemes") or {}
     if not isinstance(schemes, dict):
         return None
     for name in sorted(
@@ -236,15 +238,13 @@ def _collection_auth(root: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     return None
 
 
-def _operation_auth(
-    identity: OperationIdentity, root: Dict[str, Any]
-) -> Optional[Dict[str, Any]]:
+def _operation_auth(identity: OperationIdentity, root: dict[str, Any]) -> dict[str, Any] | None:
     security = identity.operation.get("security")
     if security is None:
         return None
     if isinstance(security, list) and not security:
         return {"type": "noauth"}
-    schemes = ((root.get("components") or {}).get("securitySchemes") or {})
+    schemes = (root.get("components") or {}).get("securitySchemes") or {}
     for requirement in security:
         if not isinstance(requirement, dict):
             continue
@@ -256,11 +256,11 @@ def _operation_auth(
 
 
 def build_request_item(
-    identity: OperationIdentity, root: Dict[str, Any], settings: ContractSettings
-) -> Dict[str, Any]:
+    identity: OperationIdentity, root: dict[str, Any], settings: ContractSettings
+) -> dict[str, Any]:
     body, media_type = _body(identity, root, settings)
 
-    request: Dict[str, Any] = {
+    request: dict[str, Any] = {
         "method": identity.method.upper(),
         "header": _headers(identity, root, media_type),
         "url": _url(identity, root, settings),
@@ -278,7 +278,7 @@ def build_request_item(
         request["auth"] = auth
 
     name = _request_name(identity)
-    item: Dict[str, Any] = {
+    item: dict[str, Any] = {
         "name": name,
         "id": deterministic_uuid("request", identity.identity),
         "request": request,
@@ -307,7 +307,7 @@ def build_request_item(
     return item
 
 
-def _owned_keys(request: Dict[str, Any]) -> Dict[str, List[str]]:
+def _owned_keys(request: dict[str, Any]) -> dict[str, list[str]]:
     url = request.get("url") or {}
     body = request.get("body") or {}
     owned = {
@@ -321,7 +321,7 @@ def _owned_keys(request: Dict[str, Any]) -> Dict[str, List[str]]:
     return owned
 
 
-def _raw_body(request: Dict[str, Any]) -> Any:
+def _raw_body(request: dict[str, Any]) -> Any:
     body = request.get("body")
     if not isinstance(body, dict):
         return ""
@@ -336,13 +336,13 @@ def _request_name(identity: OperationIdentity) -> str:
 
 
 def _responses(
-    identity: OperationIdentity, root: Dict[str, Any], settings: ContractSettings
-) -> List[Dict[str, Any]]:
+    identity: OperationIdentity, root: dict[str, Any], settings: ContractSettings
+) -> list[dict[str, Any]]:
     responses = identity.operation.get("responses")
     if not isinstance(responses, dict):
         return []
 
-    items: List[Dict[str, Any]] = []
+    items: list[dict[str, Any]] = []
     for status in sorted(responses):
         if not status.isdigit():
             continue
@@ -358,15 +358,13 @@ def _responses(
             if example is not None:
                 body = dumps(example, indent=settings.INDENT).rstrip("\n")
 
-        entry: Dict[str, Any] = {
+        entry: dict[str, Any] = {
             "id": deterministic_uuid("response", identity.identity, status),
             "name": f"{status} {definition.get('description') or ''}".strip(),
             "code": int(status),
             "status": str(definition.get("description") or ""),
             "_postman_previewlanguage": "json" if media_type == JSON_MEDIA_TYPE else "text",
-            "header": (
-                [{"key": "Content-Type", "value": media_type}] if media_type else []
-            ),
+            "header": ([{"key": "Content-Type", "value": media_type}] if media_type else []),
             "body": body,
             METADATA_KEY: {
                 "managed": True,
@@ -379,8 +377,8 @@ def _responses(
 
 
 def build_collection(
-    schema: Dict[str, Any], settings: Optional[ContractSettings] = None
-) -> Dict[str, Any]:
+    schema: dict[str, Any], settings: ContractSettings | None = None
+) -> dict[str, Any]:
     """Render a complete Postman v2.1 collection from an OpenAPI document."""
     settings = settings or contract_settings
     identities = build_identities(schema)
@@ -390,13 +388,11 @@ def build_collection(
     description = settings.POSTMAN_COLLECTION_DESCRIPTION or str(info.get("description") or "")
     collection_id = settings.POSTMAN_COLLECTION_ID or deterministic_uuid("collection", name)
 
-    folders: Dict[str, List[Dict[str, Any]]] = {}
+    folders: dict[str, list[dict[str, Any]]] = {}
     for identity in identities:
-        folders.setdefault(identity.tag, []).append(
-            build_request_item(identity, schema, settings)
-        )
+        folders.setdefault(identity.tag, []).append(build_request_item(identity, schema, settings))
 
-    items: List[Dict[str, Any]] = []
+    items: list[dict[str, Any]] = []
     for tag in sorted(folders):
         requests = sorted(
             folders[tag],
@@ -414,7 +410,7 @@ def build_collection(
             }
         )
 
-    collection: Dict[str, Any] = {
+    collection: dict[str, Any] = {
         "info": {
             "_postman_id": collection_id,
             "name": name,
@@ -443,7 +439,7 @@ def build_collection(
     return collection
 
 
-def _default_base_url(schema: Dict[str, Any]) -> str:
+def _default_base_url(schema: dict[str, Any]) -> str:
     servers = schema.get("servers")
     if isinstance(servers, list) and servers:
         url = (servers[0] or {}).get("url")

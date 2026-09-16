@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import Any, Dict
+from typing import Any
 
 from django.conf import settings as django_settings
 
@@ -10,7 +10,7 @@ from .exceptions import ConfigurationError
 
 SETTINGS_KEY = "API_CONTRACT"
 
-DEFAULTS: Dict[str, Any] = {
+DEFAULTS: dict[str, Any] = {
     # Output locations, relative to BASE_DIR unless absolute.
     "OPENAPI_OUTPUT": "api-contract/openapi.json",
     "POSTMAN_OUTPUT": "api-contract/postman_collection.json",
@@ -52,11 +52,11 @@ BOOLEAN_KEYS = frozenset(
 class ContractSettings:
     """Read-only view over ``settings.API_CONTRACT`` with defaults applied."""
 
-    def __init__(self, overrides: Dict[str, Any] | None = None):
+    def __init__(self, overrides: dict[str, Any] | None = None):
         self._overrides = dict(overrides or {})
 
     @property
-    def _user_settings(self) -> Dict[str, Any]:
+    def _user_settings(self) -> dict[str, Any]:
         configured = getattr(django_settings, SETTINGS_KEY, {}) or {}
         if not isinstance(configured, dict):
             raise ConfigurationError(f"settings.{SETTINGS_KEY} must be a dict")
@@ -95,7 +95,7 @@ class ContractSettings:
     def postman_path(self) -> str:
         return self.resolve_path(self.POSTMAN_OUTPUT)
 
-    def as_dict(self) -> Dict[str, Any]:
+    def as_dict(self) -> dict[str, Any]:
         return {key: getattr(self, key) for key in DEFAULTS}
 
 

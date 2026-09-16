@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, Iterable, List, Set
+from collections.abc import Iterable
+from typing import Any
 
 from ..constants import HTTP_METHODS
 from ..exceptions import SchemaValidationError
@@ -9,7 +10,7 @@ from ..exceptions import SchemaValidationError
 _PATH_PARAM_RE = re.compile(r"\{([^}]*)\}")
 
 
-def _collect_refs(node: Any, found: Set[str]) -> None:
+def _collect_refs(node: Any, found: set[str]) -> None:
     if isinstance(node, dict):
         ref = node.get("$ref")
         if isinstance(ref, str):
@@ -21,7 +22,7 @@ def _collect_refs(node: Any, found: Set[str]) -> None:
             _collect_refs(value, found)
 
 
-def _resolve_ref(schema: Dict[str, Any], ref: str) -> bool:
+def _resolve_ref(schema: dict[str, Any], ref: str) -> bool:
     if not ref.startswith("#/"):
         # External documents are out of scope; assume the author knows best.
         return True
@@ -34,8 +35,8 @@ def _resolve_ref(schema: Dict[str, Any], ref: str) -> bool:
     return True
 
 
-def _operation_problems(path: str, method: str, operation: Dict[str, Any]) -> List[str]:
-    problems: List[str] = []
+def _operation_problems(path: str, method: str, operation: dict[str, Any]) -> list[str]:
+    problems: list[str] = []
     label = f"{method.upper()} {path}"
 
     responses = operation.get("responses")
@@ -57,15 +58,13 @@ def _operation_problems(path: str, method: str, operation: Dict[str, Any]) -> Li
         if not isinstance(parameter, dict) or "$ref" in parameter:
             continue
         if parameter.get("in") == "path" and parameter.get("required") is not True:
-            problems.append(
-                f"{label}: path parameter {parameter.get('name')!r} must be required"
-            )
+            problems.append(f"{label}: path parameter {parameter.get('name')!r} must be required")
 
     return problems
 
 
-def collect_problems(schema: Dict[str, Any]) -> List[str]:
-    problems: List[str] = []
+def collect_problems(schema: dict[str, Any]) -> list[str]:
+    problems: list[str] = []
 
     version = schema.get("openapi")
     if not isinstance(version, str) or not version.startswith("3."):
@@ -84,7 +83,7 @@ def collect_problems(schema: Dict[str, Any]) -> List[str]:
         problems.append("paths object is missing")
         return problems
 
-    seen_operation_ids: Dict[str, str] = {}
+    seen_operation_ids: dict[str, str] = {}
     for path, item in paths.items():
         if not path.startswith("/"):
             problems.append(f"path {path!r} must start with '/'")
@@ -110,7 +109,7 @@ def collect_problems(schema: Dict[str, Any]) -> List[str]:
                 else:
                     seen_operation_ids[operation_id] = label
 
-    refs: Set[str] = set()
+    refs: set[str] = set()
     _collect_refs(schema, refs)
     for ref in sorted(refs):
         if not _resolve_ref(schema, ref):
@@ -119,7 +118,7 @@ def collect_problems(schema: Dict[str, Any]) -> List[str]:
     return problems
 
 
-def validate_schema(schema: Dict[str, Any], strict: bool = True) -> List[str]:
+def validate_schema(schema: dict[str, Any], strict: bool = True) -> list[str]:
     """Check the document and raise when it is structurally unusable.
 
     This is a targeted structural check rather than a full JSON Schema

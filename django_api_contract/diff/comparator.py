@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any
 
 from ..constants import JSON_MEDIA_TYPE
 from ..postman.examples import resolve_ref
@@ -11,7 +11,7 @@ from .models import Change, ChangeKind, ContractDiff, Severity
 MAX_DEPTH = 6
 
 
-def _deref(node: Any, root: Dict[str, Any], seen: Set[str]) -> Dict[str, Any]:
+def _deref(node: Any, root: dict[str, Any], seen: set[str]) -> dict[str, Any]:
     if not isinstance(node, dict):
         return {}
     ref = node.get("$ref")
@@ -20,7 +20,7 @@ def _deref(node: Any, root: Dict[str, Any], seen: Set[str]) -> Dict[str, Any]:
             return {}
         return _deref(resolve_ref(root, ref) or {}, root, seen | {ref})
     if isinstance(node.get("allOf"), list):
-        merged: Dict[str, Any] = {"type": "object", "properties": {}, "required": []}
+        merged: dict[str, Any] = {"type": "object", "properties": {}, "required": []}
         for part in node["allOf"]:
             resolved = _deref(part, root, seen)
             merged["properties"].update(resolved.get("properties") or {})
@@ -36,7 +36,7 @@ class FieldInfo(dict):
     """Flat description of one field, comparable between two schema versions."""
 
 
-def _type_of(node: Dict[str, Any]) -> str:
+def _type_of(node: dict[str, Any]) -> str:
     node_type = node.get("type")
     if isinstance(node_type, list):
         non_null = [t for t in node_type if t != "null"]
@@ -52,13 +52,13 @@ def _type_of(node: Dict[str, Any]) -> str:
 
 def flatten_fields(
     node: Any,
-    root: Dict[str, Any],
+    root: dict[str, Any],
     *,
     prefix: str = "",
     required: bool = False,
     depth: int = 0,
-    seen: Optional[Set[str]] = None,
-) -> Dict[str, FieldInfo]:
+    seen: set[str] | None = None,
+) -> dict[str, FieldInfo]:
     """Flatten a schema into ``{dotted.name: descriptor}``.
 
     Arrays are marked with ``[]`` so that a list of objects still exposes its
@@ -69,7 +69,7 @@ def flatten_fields(
     if not resolved or depth > MAX_DEPTH:
         return {}
 
-    fields: Dict[str, FieldInfo] = {}
+    fields: dict[str, FieldInfo] = {}
     node_type = _type_of(resolved)
 
     if node_type == "array":
@@ -88,11 +88,12 @@ def flatten_fields(
         for name in sorted(properties):
             child = _deref(properties[name], root, seen)
             path = f"{prefix}.{name}" if prefix else name
+            enum = child.get("enum")
             fields[path] = FieldInfo(
                 type=_type_of(child),
                 required=name in required_names,
                 nullable=bool(child.get("nullable")) or "null" in (child.get("type") or []),
-                enum=tuple(child.get("enum")) if isinstance(child.get("enum"), list) else None,
+                enum=tuple(enum) if isinstance(enum, list) else None,
                 format=child.get("format"),
                 read_only=bool(child.get("readOnly")),
                 write_only=bool(child.get("writeOnly")),
@@ -111,7 +112,7 @@ def flatten_fields(
     return fields
 
 
-def _body_schema(operation: Dict[str, Any], root: Dict[str, Any]) -> Any:
+def _body_schema(operation: dict[str, Any], root: dict[str, Any]) -> Any:
     body = operation.get("requestBody")
     if isinstance(body, dict) and "$ref" in body:
         body = resolve_ref(root, body["$ref"]) or {}
@@ -124,7 +125,7 @@ def _body_schema(operation: Dict[str, Any], root: Dict[str, Any]) -> Any:
     return (content.get(media_type) or {}).get("schema")
 
 
-def _response_schema(operation: Dict[str, Any], root: Dict[str, Any]) -> Tuple[Optional[str], Any]:
+def _response_schema(operation: dict[str, Any], root: dict[str, Any]) -> tuple[str | None, Any]:
     responses = operation.get("responses")
     if not isinstance(responses, dict):
         return None, None
@@ -138,8 +139,8 @@ def _response_schema(operation: Dict[str, Any], root: Dict[str, Any]) -> Tuple[O
     return None, None
 
 
-def _parameters(operation: Dict[str, Any], root: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
-    result: Dict[str, Dict[str, Any]] = {}
+def _parameters(operation: dict[str, Any], root: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    result: dict[str, dict[str, Any]] = {}
     for parameter in operation.get("parameters") or []:
         if not isinstance(parameter, dict):
             continue
@@ -155,12 +156,12 @@ def _parameters(operation: Dict[str, Any], root: Dict[str, Any]) -> Dict[str, Di
 def _compare_fields(
     endpoint: str,
     label: str,
-    old_fields: Dict[str, FieldInfo],
-    new_fields: Dict[str, FieldInfo],
+    old_fields: dict[str, FieldInfo],
+    new_fields: dict[str, FieldInfo],
     *,
     is_request: bool,
-) -> List[Change]:
-    changes: List[Change] = []
+) -> list[Change]:
+    changes: list[Change] = []
 
     for name in sorted(set(new_fields) - set(old_fields)):
         info = new_fields[name]
@@ -255,12 +256,12 @@ def _compare_fields(
 
 def _compare_parameters(
     endpoint: str,
-    old_operation: Dict[str, Any],
-    new_operation: Dict[str, Any],
-    old_root: Dict[str, Any],
-    new_root: Dict[str, Any],
-) -> List[Change]:
-    changes: List[Change] = []
+    old_operation: dict[str, Any],
+    new_operation: dict[str, Any],
+    old_root: dict[str, Any],
+    new_root: dict[str, Any],
+) -> list[Change]:
+    changes: list[Change] = []
     old_params = _parameters(old_operation, old_root)
     new_params = _parameters(new_operation, new_root)
 
@@ -269,16 +270,18 @@ def _compare_parameters(
         required = bool(parameter.get("required"))
         severity = Severity.BREAKING if required else Severity.NON_BREAKING
         changes.append(
-            Change(ChangeKind.CHANGED, severity, endpoint, f"parameter {key} added"
-                   + (" as required" if required else ""))
+            Change(
+                ChangeKind.CHANGED,
+                severity,
+                endpoint,
+                f"parameter {key} added" + (" as required" if required else ""),
+            )
         )
 
     for key in sorted(set(old_params) - set(new_params)):
         location = key.split(":", 1)[0]
         severity = Severity.BREAKING if location == "path" else Severity.POSSIBLY_BREAKING
-        changes.append(
-            Change(ChangeKind.CHANGED, severity, endpoint, f"parameter {key} removed")
-        )
+        changes.append(Change(ChangeKind.CHANGED, severity, endpoint, f"parameter {key} removed"))
 
     for key in sorted(set(old_params) & set(new_params)):
         old_type = _type_of(_deref(old_params[key].get("schema") or {}, old_root, set()))
@@ -307,7 +310,7 @@ def _compare_parameters(
     return changes
 
 
-def _security_signature(operation: Dict[str, Any], root: Dict[str, Any]) -> str:
+def _security_signature(operation: dict[str, Any], root: dict[str, Any]) -> str:
     security = operation.get("security")
     if security is None:
         security = root.get("security")
@@ -319,7 +322,7 @@ def _security_signature(operation: Dict[str, Any], root: Dict[str, Any]) -> str:
     return ", ".join(names) if names else "none"
 
 
-def compare_schemas(old: Dict[str, Any], new: Dict[str, Any]) -> ContractDiff:
+def compare_schemas(old: dict[str, Any], new: dict[str, Any]) -> ContractDiff:
     """Report what changed between two OpenAPI documents, endpoint by endpoint."""
     diff = ContractDiff()
 
@@ -344,9 +347,7 @@ def compare_schemas(old: Dict[str, Any], new: Dict[str, Any]) -> ContractDiff:
         old_body = flatten_fields(_body_schema(old_operation, old) or {}, old)
         new_body = flatten_fields(_body_schema(new_operation, new) or {}, new)
         if old_body or new_body:
-            diff.extend(
-                _compare_fields(endpoint, "request", old_body, new_body, is_request=True)
-            )
+            diff.extend(_compare_fields(endpoint, "request", old_body, new_body, is_request=True))
 
         old_status, old_response = _response_schema(old_operation, old)
         new_status, new_response = _response_schema(new_operation, new)
@@ -366,7 +367,10 @@ def compare_schemas(old: Dict[str, Any], new: Dict[str, Any]) -> ContractDiff:
         if old_response_fields or new_response_fields:
             diff.extend(
                 _compare_fields(
-                    endpoint, "response", old_response_fields, new_response_fields,
+                    endpoint,
+                    "response",
+                    old_response_fields,
+                    new_response_fields,
                     is_request=False,
                 )
             )

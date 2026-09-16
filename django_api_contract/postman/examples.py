@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Set
+from typing import Any
 
 MAX_DEPTH = 6
 
@@ -25,7 +25,7 @@ STRING_FORMATS = {
 }
 
 
-def resolve_ref(root: Dict[str, Any], ref: str) -> Optional[Dict[str, Any]]:
+def resolve_ref(root: dict[str, Any], ref: str) -> dict[str, Any] | None:
     if not ref.startswith("#/"):
         return None
     node: Any = root
@@ -37,8 +37,8 @@ def resolve_ref(root: Dict[str, Any], ref: str) -> Optional[Dict[str, Any]]:
     return node if isinstance(node, dict) else None
 
 
-def _merge_all_of(parts: List[Any], root: Dict[str, Any], seen: Set[str]) -> Dict[str, Any]:
-    merged: Dict[str, Any] = {"type": "object", "properties": {}, "required": []}
+def _merge_all_of(parts: list[Any], root: dict[str, Any], seen: set[str]) -> dict[str, Any]:
+    merged: dict[str, Any] = {"type": "object", "properties": {}, "required": []}
     for part in parts:
         resolved = _deref(part, root, seen) or {}
         merged["properties"].update(resolved.get("properties") or {})
@@ -47,7 +47,7 @@ def _merge_all_of(parts: List[Any], root: Dict[str, Any], seen: Set[str]) -> Dic
     return merged
 
 
-def _deref(node: Any, root: Dict[str, Any], seen: Set[str]) -> Optional[Dict[str, Any]]:
+def _deref(node: Any, root: dict[str, Any], seen: set[str]) -> dict[str, Any] | None:
     if not isinstance(node, dict):
         return None
     ref = node.get("$ref")
@@ -61,11 +61,11 @@ def _deref(node: Any, root: Dict[str, Any], seen: Set[str]) -> Optional[Dict[str
 
 def example_for(
     node: Any,
-    root: Dict[str, Any],
+    root: dict[str, Any],
     *,
     for_request: bool = True,
     depth: int = 0,
-    seen: Optional[Set[str]] = None,
+    seen: set[str] | None = None,
 ) -> Any:
     """Build a deterministic example value for an OpenAPI schema node."""
     seen = seen or set()
@@ -136,7 +136,7 @@ def example_for(
     return _string_example(node)
 
 
-def _string_example(node: Dict[str, Any]) -> str:
+def _string_example(node: dict[str, Any]) -> str:
     fmt = node.get("format")
     if fmt in STRING_FORMATS:
         return STRING_FORMATS[fmt]
@@ -146,13 +146,13 @@ def _string_example(node: Dict[str, Any]) -> str:
 
 
 def _object_example(
-    node: Dict[str, Any],
-    root: Dict[str, Any],
+    node: dict[str, Any],
+    root: dict[str, Any],
     *,
     for_request: bool,
     depth: int,
-    seen: Set[str],
-) -> Dict[str, Any]:
+    seen: set[str],
+) -> dict[str, Any]:
     properties = node.get("properties")
     if not isinstance(properties, dict):
         additional = node.get("additionalProperties")
@@ -163,7 +163,7 @@ def _object_example(
             return {"key": value}
         return {}
 
-    result: Dict[str, Any] = {}
+    result: dict[str, Any] = {}
     for name in sorted(properties):
         prop = properties[name]
         resolved = _deref(prop, root, seen) or {}
@@ -171,15 +171,13 @@ def _object_example(
             continue
         if not for_request and resolved.get("writeOnly"):
             continue
-        result[name] = example_for(
-            prop, root, for_request=for_request, depth=depth + 1, seen=seen
-        )
+        result[name] = example_for(prop, root, for_request=for_request, depth=depth + 1, seen=seen)
     return result
 
 
 def flatten_form_fields(
-    node: Any, root: Dict[str, Any], *, multipart: bool = False
-) -> List[Dict[str, Any]]:
+    node: Any, root: dict[str, Any], *, multipart: bool = False
+) -> list[dict[str, Any]]:
     """Turn an object schema into Postman formdata / urlencoded entries.
 
     In a multipart body a ``uri`` formatted string is also treated as a file:
@@ -195,7 +193,7 @@ def flatten_form_fields(
         return []
 
     required = set(resolved.get("required") or [])
-    fields: List[Dict[str, Any]] = []
+    fields: list[dict[str, Any]] = []
     for name in sorted(properties):
         prop = _deref(properties[name], root, set()) or {}
         if prop.get("readOnly"):
@@ -205,7 +203,7 @@ def flatten_form_fields(
         is_file = prop.get("format") in file_formats or (
             prop.get("type") == "array" and item_schema.get("format") in file_formats
         )
-        entry: Dict[str, Any] = {"key": name, "type": "file" if is_file else "text"}
+        entry: dict[str, Any] = {"key": name, "type": "file" if is_file else "text"}
         if is_file:
             entry["src"] = []
         else:

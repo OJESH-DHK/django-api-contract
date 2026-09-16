@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from ..constants import UNGROUPED_FOLDER
 from ..schema.normalizer import iter_operations
@@ -23,14 +23,14 @@ class OperationIdentity:
 
     method: str
     path: str
-    operation: Dict[str, Any] = field(repr=False, default_factory=dict)
+    operation: dict[str, Any] = field(repr=False, default_factory=dict)
 
     @property
     def identity(self) -> str:
         return identity_string(self.method, self.path)
 
     @property
-    def operation_id(self) -> Optional[str]:
+    def operation_id(self) -> str | None:
         value = self.operation.get("operationId")
         return value if isinstance(value, str) and value else None
 
@@ -77,7 +77,7 @@ class OperationIdentity:
     def response_fingerprint(self) -> str:
         return canonical(self.operation.get("responses", {}))
 
-    def similarity_to(self, other: "OperationIdentity") -> float:
+    def similarity_to(self, other: OperationIdentity) -> float:
         """Confidence that ``other`` is this operation under a new name.
 
         Weighted so that the request/response contract matters more than the
@@ -97,26 +97,26 @@ class OperationIdentity:
         )
 
 
-def build_identities(schema: Dict[str, Any]) -> List[OperationIdentity]:
+def build_identities(schema: dict[str, Any]) -> list[OperationIdentity]:
     return [
         OperationIdentity(method=method, path=path, operation=operation)
         for path, method, operation in iter_operations(schema)
     ]
 
 
-def index_by_identity(identities: List[OperationIdentity]) -> Dict[str, OperationIdentity]:
+def index_by_identity(identities: list[OperationIdentity]) -> dict[str, OperationIdentity]:
     return {item.identity: item for item in identities}
 
 
 def index_by_operation_id(
-    identities: List[OperationIdentity],
-) -> Dict[str, OperationIdentity]:
+    identities: list[OperationIdentity],
+) -> dict[str, OperationIdentity]:
     """Map operationId to operation, skipping ids that are not unique.
 
     A duplicated operationId cannot identify anything, so it is dropped rather
     than silently matching the wrong request.
     """
-    counts: Dict[str, int] = {}
+    counts: dict[str, int] = {}
     for item in identities:
         if item.operation_id:
             counts[item.operation_id] = counts.get(item.operation_id, 0) + 1
@@ -137,12 +137,12 @@ class PreviousOperation:
 
     method: str
     path: str
-    operation_id: Optional[str] = None
-    request_fingerprint: Optional[str] = None
-    response_fingerprint: Optional[str] = None
+    operation_id: str | None = None
+    request_fingerprint: str | None = None
+    response_fingerprint: str | None = None
 
     @classmethod
-    def from_metadata(cls, data: Dict[str, Any]) -> Optional["PreviousOperation"]:
+    def from_metadata(cls, data: dict[str, Any]) -> PreviousOperation | None:
         method = data.get("method")
         path = data.get("path")
         if not method or not path:

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any
 
 from ..constants import HTTP_METHODS
 from ..utils import method_sort_key, normalize_path
@@ -45,9 +45,9 @@ COMPONENT_ORDER = (
 )
 
 
-def _ordered(data: Dict[str, Any], preferred: tuple) -> Dict[str, Any]:
+def _ordered(data: dict[str, Any], preferred: tuple) -> dict[str, Any]:
     """Reorder mapping keys: preferred ones first, remainder sorted."""
-    result: Dict[str, Any] = {}
+    result: dict[str, Any] = {}
     for key in preferred:
         if key in data:
             result[key] = data[key]
@@ -57,7 +57,7 @@ def _ordered(data: Dict[str, Any], preferred: tuple) -> Dict[str, Any]:
     return result
 
 
-def _parameter_key(parameter: Dict[str, Any]) -> tuple:
+def _parameter_key(parameter: dict[str, Any]) -> tuple:
     location_rank = {"path": 0, "query": 1, "header": 2, "cookie": 3}
     return (
         location_rank.get(parameter.get("in", ""), 9),
@@ -66,7 +66,7 @@ def _parameter_key(parameter: Dict[str, Any]) -> tuple:
     )
 
 
-def _normalize_operation(operation: Dict[str, Any]) -> Dict[str, Any]:
+def _normalize_operation(operation: dict[str, Any]) -> dict[str, Any]:
     normalized = dict(operation)
 
     parameters = normalized.get("parameters")
@@ -86,18 +86,16 @@ def _normalize_operation(operation: Dict[str, Any]) -> Dict[str, Any]:
     return _ordered(normalized, OPERATION_ORDER)
 
 
-def _normalize_path_item(path_item: Dict[str, Any]) -> Dict[str, Any]:
+def _normalize_path_item(path_item: dict[str, Any]) -> dict[str, Any]:
     methods = [key for key in path_item if key.lower() in HTTP_METHODS]
     others = sorted(key for key in path_item if key not in methods)
 
-    normalized: Dict[str, Any] = {}
+    normalized: dict[str, Any] = {}
     for key in others:
         normalized[key] = path_item[key]
     for method in sorted(methods, key=method_sort_key):
         value = path_item[method]
-        normalized[method] = (
-            _normalize_operation(value) if isinstance(value, dict) else value
-        )
+        normalized[method] = _normalize_operation(value) if isinstance(value, dict) else value
     return normalized
 
 
@@ -121,7 +119,7 @@ def _normalize_schema_object(value: Any) -> Any:
     return value
 
 
-def normalize_schema(schema: Dict[str, Any]) -> Dict[str, Any]:
+def normalize_schema(schema: dict[str, Any]) -> dict[str, Any]:
     """Return a byte-stable version of ``schema``.
 
     Two runs over an unchanged API must produce identical files, otherwise the
@@ -131,7 +129,7 @@ def normalize_schema(schema: Dict[str, Any]) -> Dict[str, Any]:
 
     paths = normalized.get("paths")
     if isinstance(paths, dict):
-        rebuilt: Dict[str, Any] = {}
+        rebuilt: dict[str, Any] = {}
         for raw_path in sorted(paths, key=normalize_path):
             item = paths[raw_path]
             rebuilt[normalize_path(raw_path)] = (
@@ -141,7 +139,7 @@ def normalize_schema(schema: Dict[str, Any]) -> Dict[str, Any]:
 
     components = normalized.get("components")
     if isinstance(components, dict):
-        rebuilt_components: Dict[str, Any] = {}
+        rebuilt_components: dict[str, Any] = {}
         for section in COMPONENT_ORDER:
             if section in components and isinstance(components[section], dict):
                 rebuilt_components[section] = {
@@ -163,7 +161,7 @@ def normalize_schema(schema: Dict[str, Any]) -> Dict[str, Any]:
     return _ordered(normalized, TOP_LEVEL_ORDER)
 
 
-def iter_operations(schema: Dict[str, Any]) -> List[tuple]:
+def iter_operations(schema: dict[str, Any]) -> list[tuple]:
     """Yield ``(path, method, operation)`` triples in deterministic order."""
     results = []
     for path, item in (schema.get("paths") or {}).items():

@@ -1,8 +1,6 @@
 METADATA_KEY = "x-api-contract"
 
-POSTMAN_SCHEMA_URL = (
-    "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-)
+POSTMAN_SCHEMA_URL = "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 
 # Namespace used to derive deterministic Postman ids via uuid5.
 UUID_NAMESPACE = "django-api-contract"

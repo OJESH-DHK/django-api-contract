@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from collections.abc import Iterable
+from typing import Any
 
 from ..conf import ContractSettings
 from ..constants import METADATA_KEY
@@ -17,25 +18,25 @@ USER_OWNED_ITEM_KEYS = (
 KEYED_LIST_USER_FIELDS = ("value", "disabled", "src")
 
 
-def metadata(node: Dict[str, Any]) -> Dict[str, Any]:
+def metadata(node: dict[str, Any]) -> dict[str, Any]:
     value = node.get(METADATA_KEY)
     return value if isinstance(value, dict) else {}
 
 
-def is_managed(node: Dict[str, Any]) -> bool:
+def is_managed(node: dict[str, Any]) -> bool:
     return bool(metadata(node).get("managed"))
 
 
-def _generated_hash(node: Dict[str, Any], field: str) -> Optional[str]:
+def _generated_hash(node: dict[str, Any], field: str) -> str | None:
     return metadata(node).get("generated", {}).get(field)
 
 
-def owned_keys(node: Dict[str, Any], section: str) -> List[str]:
+def owned_keys(node: dict[str, Any], section: str) -> list[str]:
     values = metadata(node).get("owned", {}).get(section)
     return [str(value) for value in values] if isinstance(values, list) else []
 
 
-def was_edited(existing: Dict[str, Any], field: str, current_value: Any) -> bool:
+def was_edited(existing: dict[str, Any], field: str, current_value: Any) -> bool:
     """True when the value on disk differs from what this package last wrote.
 
     Without a recorded hash the value cannot be attributed, so it is treated as
@@ -48,10 +49,10 @@ def was_edited(existing: Dict[str, Any], field: str, current_value: Any) -> bool
 
 
 def merge_keyed_list(
-    generated: List[Dict[str, Any]],
-    existing: Optional[List[Dict[str, Any]]],
-    previously_owned: Optional[Iterable[str]] = None,
-) -> List[Dict[str, Any]]:
+    generated: list[dict[str, Any]],
+    existing: list[dict[str, Any]] | None,
+    previously_owned: Iterable[str] | None = None,
+) -> list[dict[str, Any]]:
     """Merge header / query / form entries without duplicating keys.
 
     Structure (which keys exist, their descriptions) comes from the schema.
@@ -62,12 +63,12 @@ def merge_keyed_list(
     """
     existing = existing or []
     owned = set(previously_owned or [])
-    by_key: Dict[str, Dict[str, Any]] = {}
+    by_key: dict[str, dict[str, Any]] = {}
     for entry in existing:
         if isinstance(entry, dict) and entry.get("key") is not None:
             by_key.setdefault(str(entry["key"]), entry)
 
-    merged: List[Dict[str, Any]] = []
+    merged: list[dict[str, Any]] = []
     used: set = set()
     for entry in generated:
         key = str(entry.get("key", ""))
@@ -97,8 +98,8 @@ def merge_keyed_list(
 
 
 def _merge_url(
-    generated: Dict[str, Any], existing: Any, existing_item: Dict[str, Any]
-) -> Dict[str, Any]:
+    generated: dict[str, Any], existing: Any, existing_item: dict[str, Any]
+) -> dict[str, Any]:
     if not isinstance(existing, dict):
         return generated
     merged = dict(generated)
@@ -118,10 +119,10 @@ def _merge_url(
 
 
 def _merge_body(
-    generated: Optional[Dict[str, Any]],
+    generated: dict[str, Any] | None,
     existing: Any,
-    existing_item: Dict[str, Any],
-) -> Tuple[Optional[Dict[str, Any]], bool]:
+    existing_item: dict[str, Any],
+) -> tuple[dict[str, Any] | None, bool]:
     """Return the merged body and whether a manual edit was preserved."""
     if generated is None:
         return (existing if isinstance(existing, dict) else None), False
@@ -150,21 +151,21 @@ def _merge_body(
 
 
 def _merge_responses(
-    generated: List[Dict[str, Any]],
+    generated: list[dict[str, Any]],
     existing: Any,
     settings: ContractSettings,
-) -> Tuple[List[Dict[str, Any]], int]:
+) -> tuple[list[dict[str, Any]], int]:
     """Keep manual examples; refresh generated ones."""
     existing_list = [item for item in (existing or []) if isinstance(item, dict)]
-    managed_by_status: Dict[str, Dict[str, Any]] = {}
-    manual: List[Dict[str, Any]] = []
+    managed_by_status: dict[str, dict[str, Any]] = {}
+    manual: list[dict[str, Any]] = []
     for item in existing_list:
         if is_managed(item):
             managed_by_status.setdefault(str(metadata(item).get("status", item.get("code"))), item)
         else:
             manual.append(item)
 
-    merged: List[Dict[str, Any]] = []
+    merged: list[dict[str, Any]] = []
     for entry in generated:
         status = str(metadata(entry).get("status", entry.get("code")))
         previous = managed_by_status.get(status)
@@ -185,16 +186,16 @@ def _merge_responses(
 
 
 def merge_request_item(
-    generated: Dict[str, Any],
-    existing: Dict[str, Any],
+    generated: dict[str, Any],
+    existing: dict[str, Any],
     settings: ContractSettings,
-) -> Tuple[Dict[str, Any], List[str]]:
+) -> tuple[dict[str, Any], list[str]]:
     """Fold a freshly generated request into the one already in the file.
 
     Returns the merged item plus a list of notes describing what was kept
     because a human had changed it.
     """
-    notes: List[str] = []
+    notes: list[str] = []
     merged = dict(generated)
 
     if existing.get("id"):
@@ -211,7 +212,8 @@ def merge_request_item(
                 notes.append("scripts")
 
     generated_request = dict(generated.get("request") or {})
-    existing_request = existing.get("request") if isinstance(existing.get("request"), dict) else {}
+    raw_request = existing.get("request")
+    existing_request: dict[str, Any] = raw_request if isinstance(raw_request, dict) else {}
 
     generated_request["header"] = merge_keyed_list(
         generated_request.get("header", []),
@@ -253,7 +255,7 @@ def merge_request_item(
     return merged, notes
 
 
-def merge_folder(generated: Dict[str, Any], existing: Dict[str, Any]) -> Dict[str, Any]:
+def merge_folder(generated: dict[str, Any], existing: dict[str, Any]) -> dict[str, Any]:
     """Keep a folder's identity and human notes, replace only its contents."""
     merged = dict(generated)
     if existing.get("id"):

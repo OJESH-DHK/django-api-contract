@@ -1,17 +1,17 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from .models import Change, ChangeKind, ContractDiff, Severity
 
 
-def _section(title: str, lines: List[str]) -> List[str]:
+def _section(title: str, lines: list[str]) -> list[str]:
     if not lines:
         return []
     return [f"{title}:", *lines, ""]
 
 
-def _endpoint_block(endpoint: str, changes: List[Change]) -> List[str]:
+def _endpoint_block(endpoint: str, changes: list[Change]) -> list[str]:
     lines = [f"  {endpoint}"]
     for change in changes:
         if change.before is not None and change.after is not None:
@@ -27,16 +27,16 @@ def render_diff(diff: ContractDiff) -> str:
     if diff.is_empty:
         return "No API changes."
 
-    out: List[str] = []
+    out: list[str] = []
     out += _section("Added", [f"  {name}" for name in diff.added_endpoints])
     out += _section("Removed", [f"  {name}" for name in diff.removed_endpoints])
 
-    detailed: Dict[str, List[Change]] = {}
+    detailed: dict[str, list[Change]] = {}
     for change in diff.sorted_changes():
         if change.detail and change.endpoint in diff.changed_endpoints:
             detailed.setdefault(change.endpoint, []).append(change)
 
-    changed_lines: List[str] = []
+    changed_lines: list[str] = []
     for endpoint in sorted(detailed):
         changed_lines += _endpoint_block(endpoint, detailed[endpoint])
     out += _section("Changed", changed_lines)
@@ -66,7 +66,7 @@ def _breaking_line(change: Change) -> str:
     return f"{change.endpoint}: {change.detail}"
 
 
-def _counts(rows: List[tuple]) -> List[str]:
+def _counts(rows: list[tuple]) -> list[str]:
     width = max((len(label) for label, _ in rows), default=0) + 1
     return [f"  {label + ':':<{width + 1}} {value}" for label, value in rows]
 
@@ -76,10 +76,10 @@ def render_sync_summary(
     sync: Any,
     *,
     dry_run: bool = False,
-    openapi_path: Optional[str] = None,
-    postman_path: Optional[str] = None,
+    openapi_path: str | None = None,
+    postman_path: str | None = None,
 ) -> str:
-    out: List[str] = ["API Contract Synchronization", ""]
+    out: list[str] = ["API Contract Synchronization", ""]
 
     out.append("OpenAPI:")
     out += _counts(
@@ -146,7 +146,7 @@ def render_sync_summary(
     return "\n".join(out).rstrip() + "\n"
 
 
-def render_check_failure(diff: ContractDiff, stale_files: List[str]) -> str:
+def render_check_failure(diff: ContractDiff, stale_files: list[str]) -> str:
     out = ["API contract is out of date.", ""]
     if stale_files:
         out.append("Outdated files:")

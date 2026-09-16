@@ -80,7 +80,10 @@ def customized_collection(settings_obj):
     find_item(collection, "GET /customers/{id}/")["event"] = [copy.deepcopy(SCRIPT)]
     find_item(collection, "GET /customers/")["name"] = "List customers"
     collection["item"][0]["item"].append(
-        {"name": "Manual health check", "request": {"method": "GET", "url": {"raw": "{{base_url}}/health/"}}}
+        {
+            "name": "Manual health check",
+            "request": {"method": "GET", "url": {"raw": "{{base_url}}/health/"}},
+        }
     )
     return collection
 

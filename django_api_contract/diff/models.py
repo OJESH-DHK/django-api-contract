@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Optional
 
 
 class ChangeKind(str, Enum):
@@ -23,8 +22,8 @@ class Change:
     severity: Severity
     endpoint: str
     detail: str = ""
-    before: Optional[str] = None
-    after: Optional[str] = None
+    before: str | None = None
+    after: str | None = None
 
     def describe(self) -> str:
         if self.before is not None and self.after is not None:
@@ -38,48 +37,48 @@ class Change:
 
 @dataclass
 class ContractDiff:
-    changes: List[Change] = field(default_factory=list)
+    changes: list[Change] = field(default_factory=list)
 
     def add(self, change: Change) -> None:
         self.changes.append(change)
 
-    def extend(self, changes: List[Change]) -> None:
+    def extend(self, changes: list[Change]) -> None:
         self.changes.extend(changes)
 
     @property
     def is_empty(self) -> bool:
         return not self.changes
 
-    def sorted_changes(self) -> List[Change]:
+    def sorted_changes(self) -> list[Change]:
         return sorted(self.changes, key=lambda change: change.sort_key)
 
-    def by_kind(self, kind: ChangeKind) -> List[Change]:
+    def by_kind(self, kind: ChangeKind) -> list[Change]:
         return [change for change in self.sorted_changes() if change.kind is kind]
 
-    def by_severity(self, severity: Severity) -> List[Change]:
+    def by_severity(self, severity: Severity) -> list[Change]:
         return [change for change in self.sorted_changes() if change.severity is severity]
 
     @property
-    def breaking(self) -> List[Change]:
+    def breaking(self) -> list[Change]:
         return self.by_severity(Severity.BREAKING)
 
     @property
-    def possibly_breaking(self) -> List[Change]:
+    def possibly_breaking(self) -> list[Change]:
         return self.by_severity(Severity.POSSIBLY_BREAKING)
 
     @property
-    def added_endpoints(self) -> List[str]:
+    def added_endpoints(self) -> list[str]:
         return sorted(
             {c.endpoint for c in self.changes if c.kind is ChangeKind.ADDED and not c.detail}
         )
 
     @property
-    def removed_endpoints(self) -> List[str]:
+    def removed_endpoints(self) -> list[str]:
         return sorted(
             {c.endpoint for c in self.changes if c.kind is ChangeKind.REMOVED and not c.detail}
         )
 
     @property
-    def changed_endpoints(self) -> List[str]:
+    def changed_endpoints(self) -> list[str]:
         endpoints = {c.endpoint for c in self.changes if c.detail}
         return sorted(endpoints - set(self.added_endpoints) - set(self.removed_endpoints))

@@ -34,9 +34,7 @@ def test_generation_is_deterministic(schema, settings_obj):
 def test_ids_do_not_change_between_runs(schema, settings_obj):
     first = build_collection(schema, settings_obj)
     second = build_collection(schema, settings_obj)
-    assert [item["id"] for item in all_items(first)] == [
-        item["id"] for item in all_items(second)
-    ]
+    assert [item["id"] for item in all_items(first)] == [item["id"] for item in all_items(second)]
 
 
 def test_every_request_carries_identity_metadata(collection):

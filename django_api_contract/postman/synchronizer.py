@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from ..conf import ContractSettings, contract_settings
 from ..constants import ARCHIVED_SUFFIX, CONFIDENT_RENAME_SCORE, METADATA_KEY
@@ -14,16 +14,16 @@ from .merger import merge_folder, merge_request_item, metadata
 
 @dataclass
 class SyncResult:
-    collection: Dict[str, Any]
-    created: List[str] = field(default_factory=list)
-    updated: List[str] = field(default_factory=list)
-    unchanged: List[str] = field(default_factory=list)
-    renamed: List[Tuple[str, str]] = field(default_factory=list)
-    possible_renames: List[Tuple[str, str, float]] = field(default_factory=list)
-    archived: List[str] = field(default_factory=list)
-    removed: List[str] = field(default_factory=list)
-    preserved_manual: List[str] = field(default_factory=list)
-    preserved_edits: Dict[str, List[str]] = field(default_factory=dict)
+    collection: dict[str, Any]
+    created: list[str] = field(default_factory=list)
+    updated: list[str] = field(default_factory=list)
+    unchanged: list[str] = field(default_factory=list)
+    renamed: list[tuple[str, str]] = field(default_factory=list)
+    possible_renames: list[tuple[str, str, float]] = field(default_factory=list)
+    archived: list[str] = field(default_factory=list)
+    removed: list[str] = field(default_factory=list)
+    preserved_manual: list[str] = field(default_factory=list)
+    preserved_edits: dict[str, list[str]] = field(default_factory=dict)
 
     @property
     def has_changes(self) -> bool:
@@ -32,8 +32,8 @@ class SyncResult:
 
 @dataclass
 class _ExistingItem:
-    item: Dict[str, Any]
-    folder: Optional[str]
+    item: dict[str, Any]
+    folder: str | None
     order: int
 
     @property
@@ -41,7 +41,7 @@ class _ExistingItem:
         return isinstance(self.item.get("request"), dict)
 
 
-def _walk(items: Any, folder: Optional[str], sink: List[_ExistingItem]) -> None:
+def _walk(items: Any, folder: str | None, sink: list[_ExistingItem]) -> None:
     if not isinstance(items, list):
         return
     for index, item in enumerate(items):
@@ -53,8 +53,8 @@ def _walk(items: Any, folder: Optional[str], sink: List[_ExistingItem]) -> None:
             sink.append(_ExistingItem(item=item, folder=folder, order=index))
 
 
-def _existing_folders(collection: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
-    folders: Dict[str, Dict[str, Any]] = {}
+def _existing_folders(collection: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    folders: dict[str, dict[str, Any]] = {}
     for item in collection.get("item") or []:
         if isinstance(item, dict) and isinstance(item.get("item"), list):
             folders.setdefault(str(item.get("name", "")), item)
@@ -62,22 +62,22 @@ def _existing_folders(collection: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
 
 
 def _match_existing(
-    existing: List[_ExistingItem], generated_items: Dict[str, Dict[str, Any]]
-) -> Tuple[
-    Dict[str, _ExistingItem],
-    List[_ExistingItem],
-    List[_ExistingItem],
-    List[Tuple[str, str]],
+    existing: list[_ExistingItem], generated_items: dict[str, dict[str, Any]]
+) -> tuple[
+    dict[str, _ExistingItem],
+    list[_ExistingItem],
+    list[_ExistingItem],
+    list[tuple[str, str]],
 ]:
     """Pair existing managed requests with generated ones.
 
     Matching runs strongest-signal first: operationId survives a path change,
     the method+path identity survives an operationId change.
     """
-    by_identity: Dict[str, _ExistingItem] = {}
-    manual: List[_ExistingItem] = []
-    unmatched: List[_ExistingItem] = []
-    renamed: List[Tuple[str, str]] = []
+    by_identity: dict[str, _ExistingItem] = {}
+    manual: list[_ExistingItem] = []
+    unmatched: list[_ExistingItem] = []
+    renamed: list[tuple[str, str]] = []
 
     by_operation_id = {
         str(meta["operation_id"]): identity
@@ -113,20 +113,20 @@ def _match_existing(
 
 
 def _detect_renames(
-    unmatched_existing: List[_ExistingItem],
-    unclaimed_generated: Dict[str, Dict[str, Any]],
-    identities: Dict[str, Any],
+    unmatched_existing: list[_ExistingItem],
+    unclaimed_generated: dict[str, dict[str, Any]],
+    identities: dict[str, Any],
     settings: ContractSettings,
-) -> Tuple[Dict[str, _ExistingItem], List[Tuple[str, str]], List[Tuple[str, str, float]]]:
-    matched: Dict[str, _ExistingItem] = {}
-    renamed: List[Tuple[str, str]] = []
-    possible: List[Tuple[str, str, float]] = []
+) -> tuple[dict[str, _ExistingItem], list[tuple[str, str]], list[tuple[str, str, float]]]:
+    matched: dict[str, _ExistingItem] = {}
+    renamed: list[tuple[str, str]] = []
+    possible: list[tuple[str, str, float]] = []
 
     if not settings.DETECT_RENAMES:
         return matched, renamed, possible
 
     threshold = float(settings.RENAME_SIMILARITY_THRESHOLD)
-    scored: List[Tuple[float, str, _ExistingItem]] = []
+    scored: list[tuple[float, str, _ExistingItem]] = []
 
     for entry in unmatched_existing:
         previous = PreviousOperation.from_metadata(metadata(entry.item))
@@ -159,7 +159,7 @@ def _detect_renames(
     return matched, renamed, possible
 
 
-def _archive(item: Dict[str, Any]) -> Dict[str, Any]:
+def _archive(item: dict[str, Any]) -> dict[str, Any]:
     archived = dict(item)
     name = str(archived.get("name", ""))
     if not name.endswith(ARCHIVED_SUFFIX):
@@ -171,9 +171,9 @@ def _archive(item: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def synchronize_collection(
-    schema: Dict[str, Any],
-    existing: Optional[Dict[str, Any]] = None,
-    settings: Optional[ContractSettings] = None,
+    schema: dict[str, Any],
+    existing: dict[str, Any] | None = None,
+    settings: ContractSettings | None = None,
 ) -> SyncResult:
     """Fold the current API into an existing collection instead of replacing it."""
     settings = settings or contract_settings
@@ -195,12 +195,10 @@ def synchronize_collection(
 
     identities = {item.identity: item for item in build_identities(schema)}
     generated_items = {
-        metadata(item)["identity"]: item
-        for folder in generated["item"]
-        for item in folder["item"]
+        metadata(item)["identity"]: item for folder in generated["item"] for item in folder["item"]
     }
 
-    flat: List[_ExistingItem] = []
+    flat: list[_ExistingItem] = []
     _walk(existing.get("item"), None, flat)
 
     matched, unmatched, manual, id_renames = _match_existing(flat, generated_items)
@@ -217,7 +215,7 @@ def synchronize_collection(
         possible_renames=possible_renames,
     )
 
-    merged_items: Dict[str, Dict[str, Any]] = {}
+    merged_items: dict[str, dict[str, Any]] = {}
     for identity, item in generated_items.items():
         previous = matched.get(identity)
         if previous is None:
@@ -233,11 +231,7 @@ def synchronize_collection(
         else:
             result.unchanged.append(identity)
 
-    stale = [
-        entry
-        for entry in unmatched
-        if id(entry) not in rename_entry_ids
-    ]
+    stale = [entry for entry in unmatched if id(entry) not in rename_entry_ids]
 
     result.preserved_manual = [str(entry.item.get("name", "")) for entry in manual]
 
@@ -250,28 +244,28 @@ def synchronize_collection(
     return result
 
 
-def _differs(previous: Dict[str, Any], merged: Dict[str, Any]) -> bool:
+def _differs(previous: dict[str, Any], merged: dict[str, Any]) -> bool:
     from ..utils import canonical
 
     return canonical(previous) != canonical(merged)
 
 
 def _rebuild(
-    generated: Dict[str, Any],
-    existing: Dict[str, Any],
-    merged_items: Dict[str, Dict[str, Any]],
-    manual: List[_ExistingItem],
-    stale: List[_ExistingItem],
+    generated: dict[str, Any],
+    existing: dict[str, Any],
+    merged_items: dict[str, dict[str, Any]],
+    manual: list[_ExistingItem],
+    stale: list[_ExistingItem],
     settings: ContractSettings,
-) -> Tuple[Dict[str, Any], List[str], List[str]]:
+) -> tuple[dict[str, Any], list[str], list[str]]:
     """Reassemble the collection: generated folders first, human content kept."""
     existing_folders = _existing_folders(existing)
     generated_folder_names = {str(folder.get("name", "")) for folder in generated["item"]}
 
-    archived: List[str] = []
-    removed: List[str] = []
+    archived: list[str] = []
+    removed: list[str] = []
 
-    keep_by_folder: Dict[Optional[str], List[Dict[str, Any]]] = {}
+    keep_by_folder: dict[str | None, list[dict[str, Any]]] = {}
 
     if settings.PRESERVE_MANUAL_REQUESTS:
         for entry in manual:
@@ -299,7 +293,8 @@ def _rebuild(
             generated.get("variable", []), existing["variable"]
         )
 
-    existing_info = existing.get("info") if isinstance(existing.get("info"), dict) else {}
+    raw_info = existing.get("info")
+    existing_info: dict[str, Any] = raw_info if isinstance(raw_info, dict) else {}
     info = dict(generated["info"])
     if existing_info.get("_postman_id"):
         info["_postman_id"] = existing_info["_postman_id"]
@@ -307,7 +302,7 @@ def _rebuild(
         info["name"] = existing_info["name"]
     collection["info"] = info
 
-    folders: List[Dict[str, Any]] = []
+    folders: list[dict[str, Any]] = []
     for folder in generated["item"]:
         name = str(folder.get("name", ""))
         rebuilt = dict(folder)
@@ -343,13 +338,11 @@ def _rebuild(
 
 
 def _merge_collection_variables(
-    generated: List[Dict[str, Any]], existing: List[Dict[str, Any]]
-) -> List[Dict[str, Any]]:
+    generated: list[dict[str, Any]], existing: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
     """Never overwrite a value the developer configured for their environment."""
-    by_key = {
-        str(entry.get("key", "")): entry for entry in existing if isinstance(entry, dict)
-    }
-    merged: List[Dict[str, Any]] = []
+    by_key = {str(entry.get("key", "")): entry for entry in existing if isinstance(entry, dict)}
+    merged: list[dict[str, Any]] = []
     for entry in generated:
         key = str(entry.get("key", ""))
         merged.append(by_key.pop(key, entry) if key in by_key else entry)

@@ -30,9 +30,7 @@ def test_second_run_changes_nothing(schema, collection, settings_obj):
     result = sync(schema, collection, settings_obj)
     assert result.created == []
     assert result.updated == []
-    assert json.dumps(result.collection, sort_keys=True) == json.dumps(
-        collection, sort_keys=True
-    )
+    assert json.dumps(result.collection, sort_keys=True) == json.dumps(collection, sort_keys=True)
 
 
 def test_ten_runs_stay_identical(schema, collection, settings_obj):
@@ -116,9 +114,7 @@ def test_manual_request_is_preserved(schema, collection, settings_obj):
 
 def test_manual_folder_is_preserved(schema, collection, settings_obj):
     existing = copy.deepcopy(collection)
-    existing["item"].append(
-        {"name": "Scratch", "item": [copy.deepcopy(MANUAL_REQUEST)]}
-    )
+    existing["item"].append({"name": "Scratch", "item": [copy.deepcopy(MANUAL_REQUEST)]})
     result = sync(schema, existing, settings_obj)
     assert "Scratch" in [folder["name"] for folder in result.collection["item"]]
 
@@ -135,9 +131,7 @@ def test_renamed_request_name_survives(schema, collection, settings_obj):
     existing = copy.deepcopy(collection)
     find_item(existing, "GET /api/v1/customers/")["name"] = "List all customers"
     result = sync(schema, existing, settings_obj)
-    assert find_item(result.collection, "GET /api/v1/customers/")["name"] == (
-        "List all customers"
-    )
+    assert find_item(result.collection, "GET /api/v1/customers/")["name"] == ("List all customers")
 
 
 def test_custom_header_survives(schema, collection, settings_obj):
@@ -184,7 +178,9 @@ def test_untouched_request_body_is_refreshed(schema, collection, settings_obj):
     changed = copy.deepcopy(schema)
     changed["components"]["schemas"]["Customer"]["properties"]["nickname"] = {"type": "string"}
     result = sync(changed, collection, settings_obj)
-    body = json.loads(find_item(result.collection, "POST /api/v1/customers/")["request"]["body"]["raw"])
+    body = json.loads(
+        find_item(result.collection, "POST /api/v1/customers/")["request"]["body"]["raw"]
+    )
     assert "nickname" in body
 
 

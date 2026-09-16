@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from .conf import ContractSettings, contract_settings
 from .diff import ContractDiff, compare_schemas
@@ -15,18 +15,18 @@ from .utils import atomic_write, canonical, dumps, load_json
 class ContractBuild:
     """The complete result of building a contract, before anything is written."""
 
-    schema: Dict[str, Any]
+    schema: dict[str, Any]
     sync: SyncResult
     diff: ContractDiff
-    previous_schema: Optional[Dict[str, Any]] = None
-    written: List[str] = field(default_factory=list)
+    previous_schema: dict[str, Any] | None = None
+    written: list[str] = field(default_factory=list)
 
     @property
-    def collection(self) -> Dict[str, Any]:
+    def collection(self) -> dict[str, Any]:
         return self.sync.collection
 
 
-def build_contract(settings: Optional[ContractSettings] = None) -> ContractBuild:
+def build_contract(settings: ContractSettings | None = None) -> ContractBuild:
     """Produce the schema and collection in memory.
 
     Nothing is written here, so a failure at any step leaves the committed
@@ -47,12 +47,10 @@ def build_contract(settings: Optional[ContractSettings] = None) -> ContractBuild
         else ContractDiff()
     )
 
-    return ContractBuild(
-        schema=schema, sync=sync, diff=diff, previous_schema=previous_schema
-    )
+    return ContractBuild(schema=schema, sync=sync, diff=diff, previous_schema=previous_schema)
 
 
-def write_contract(build: ContractBuild, settings: Optional[ContractSettings] = None) -> List[str]:
+def write_contract(build: ContractBuild, settings: ContractSettings | None = None) -> list[str]:
     """Write both artifacts atomically once everything has been produced."""
     settings = settings or contract_settings
     indent = int(settings.INDENT)
@@ -67,35 +65,31 @@ def write_contract(build: ContractBuild, settings: Optional[ContractSettings] = 
     return paths
 
 
-def enforce_compatibility(
-    build: ContractBuild, settings: Optional[ContractSettings] = None
-) -> None:
+def enforce_compatibility(build: ContractBuild, settings: ContractSettings | None = None) -> None:
     settings = settings or contract_settings
     if not settings.FAIL_ON_BREAKING_CHANGE:
         return
     breaking = build.diff.breaking
     if breaking:
-        raise BreakingChangeError(
-            f"{len(breaking)} breaking change(s) detected", breaking
-        )
+        raise BreakingChangeError(f"{len(breaking)} breaking change(s) detected", breaking)
 
 
 @dataclass
 class CheckResult:
     build: ContractBuild
-    stale: List[str] = field(default_factory=list)
+    stale: list[str] = field(default_factory=list)
 
     @property
     def up_to_date(self) -> bool:
         return not self.stale
 
 
-def check_contract(settings: Optional[ContractSettings] = None) -> CheckResult:
+def check_contract(settings: ContractSettings | None = None) -> CheckResult:
     """Compare the freshly built contract with the files on disk."""
     settings = settings or contract_settings
     build = build_contract(settings)
 
-    stale: List[str] = []
+    stale: list[str] = []
     committed_schema = load_json(settings.openapi_path)
     if committed_schema is None or canonical(committed_schema) != canonical(build.schema):
         stale.append(settings.openapi_path)

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from django.utils.module_loading import import_string
 
@@ -17,7 +17,7 @@ def _load_generator_class(dotted_path: str):
         ) from exc
 
 
-def generate_schema(settings: Optional[ContractSettings] = None) -> Dict[str, Any]:
+def generate_schema(settings: ContractSettings | None = None) -> dict[str, Any]:
     """Build the OpenAPI document for the project's DRF routes.
 
     Everything here comes from the installed URLconf and the serializers it
@@ -26,7 +26,7 @@ def generate_schema(settings: Optional[ContractSettings] = None) -> Dict[str, An
     settings = settings or contract_settings
     generator_class = _load_generator_class(settings.SCHEMA_GENERATOR_CLASS)
 
-    kwargs: Dict[str, Any] = {}
+    kwargs: dict[str, Any] = {}
     if settings.URLCONF:
         kwargs["urlconf"] = settings.URLCONF
 

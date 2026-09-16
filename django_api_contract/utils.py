@@ -5,8 +5,9 @@ import os
 import re
 import tempfile
 import uuid
+from collections.abc import Iterable
 from difflib import SequenceMatcher
-from typing import Any, Dict, Iterable, List, Optional
+from typing import Any
 
 from .constants import METHOD_ORDER, UUID_NAMESPACE
 
@@ -28,7 +29,7 @@ def dumps(data: Any, indent: int = 2) -> str:
     return json.dumps(data, indent=indent, ensure_ascii=False, sort_keys=False) + "\n"
 
 
-def load_json(path: str) -> Optional[Any]:
+def load_json(path: str) -> Any | None:
     if not os.path.exists(path):
         return None
     with open(path, encoding="utf-8") as handle:
@@ -85,7 +86,7 @@ def path_shape(path: str) -> str:
     return _PATH_PARAM_RE.sub("{}", normalize_path(path))
 
 
-def path_segments(path: str) -> List[str]:
+def path_segments(path: str) -> list[str]:
     stripped = _TRAILING_SLASHES.sub("", normalize_path(path))
     return [segment for segment in stripped.split("/") if segment]
 
@@ -98,7 +99,7 @@ def method_sort_key(method: str) -> int:
     return METHOD_ORDER.get(method.lower(), len(METHOD_ORDER))
 
 
-def sorted_unique(values: Iterable[str]) -> List[str]:
+def sorted_unique(values: Iterable[str]) -> list[str]:
     return sorted(set(values))
 
 
@@ -117,7 +118,7 @@ def canonical(value: Any) -> str:
 
 
 def merge_preserving(
-    generated: Dict[str, Any], existing: Dict[str, Any], keys: Iterable[str]
+    generated: dict[str, Any], existing: dict[str, Any], keys: Iterable[str]
 ) -> None:
     """Copy user-owned ``keys`` from ``existing`` onto ``generated``."""
     for key in keys:
