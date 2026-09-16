@@ -39,6 +39,8 @@ dev = [
     "pytest-django>=4.7",
     "ruff>=0.4",
     "mypy>=1.9",
+    "openapi-spec-validator>=0.7",
+    "jsonschema>=4.21",
 ]
 
 [project.urls]
