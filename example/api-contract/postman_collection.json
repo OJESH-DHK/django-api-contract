@@ -1,0 +1,1392 @@
+{
+  "info": {
+    "_postman_id": "f15ddb74-e43b-50ca-bc07-1a0343e886a7",
+    "name": "Catalog API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Example API showing django-api-contract in use."
+  },
+  "item": [
+    {
+      "name": "categories",
+      "id": "520a87e6-8ab8-50bf-a9e9-403d4b42a243",
+      "item": [
+        {
+          "name": "GET /api/v1/categories/",
+          "id": "2a77954a-7999-5ba5-a4e9-a0f3e20486c2",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/categories/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "categories",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0",
+                  "description": "A page number within the paginated result set.",
+                  "disabled": true
+                }
+              ]
+            },
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "Authorization",
+                  "type": "string"
+                },
+                {
+                  "key": "value",
+                  "value": "{{api_key}}",
+                  "type": "string"
+                },
+                {
+                  "key": "in",
+                  "value": "header",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "a3c19132-bd02-50be-86fe-42e706793e78",
+              "name": "200",
+              "code": 200,
+              "status": "",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"count\": 123,\n  \"next\": \"http://api.example.org/accounts/?page=4\",\n  \"previous\": \"http://api.example.org/accounts/?page=2\",\n  \"results\": [\n    {\n      \"name\": \"string\",\n      \"slug\": \"string\"\n    }\n  ]\n}",
+              "x-api-contract": {
+                "managed": true,
+                "status": "200",
+                "generated": {
+                  "body": "0a72b6ebf3a25f5d"
+                }
+              }
+            }
+          ],
+          "x-api-contract": {
+            "managed": true,
+            "operation_id": "categories_list",
+            "identity": "GET /api/v1/categories/",
+            "method": "GET",
+            "path": "/api/v1/categories/",
+            "request_fingerprint": "2db3f706e1fe72f1",
+            "response_fingerprint": "e22c2ad3ebd2692c",
+            "generated": {
+              "name": "faf759d07b0d98f3",
+              "description": "12ae32cb1ec02d01",
+              "body": "12ae32cb1ec02d01"
+            },
+            "owned": {
+              "header": [
+                "Accept"
+              ],
+              "query": [
+                "page"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "POST /api/v1/categories/",
+          "id": "34ac5963-6a90-5b4c-a926-d97bdaf8225e",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/categories/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "categories",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"string\",\n  \"slug\": \"string\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "Authorization",
+                  "type": "string"
+                },
+                {
+                  "key": "value",
+                  "value": "{{api_key}}",
+                  "type": "string"
+                },
+                {
+                  "key": "in",
+                  "value": "header",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "35a0e6be-11c2-5a52-85dc-858cda7739ea",
+              "name": "201",
+              "code": 201,
+              "status": "",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"name\": \"string\",\n  \"slug\": \"string\"\n}",
+              "x-api-contract": {
+                "managed": true,
+                "status": "201",
+                "generated": {
+                  "body": "b1665b8ca47b235a"
+                }
+              }
+            }
+          ],
+          "x-api-contract": {
+            "managed": true,
+            "operation_id": "categories_create",
+            "identity": "POST /api/v1/categories/",
+            "method": "POST",
+            "path": "/api/v1/categories/",
+            "request_fingerprint": "2d0f9dafc3329325",
+            "response_fingerprint": "fa16ba16444f16db",
+            "generated": {
+              "name": "ef74835622e6fe3f",
+              "description": "12ae32cb1ec02d01",
+              "body": "b1665b8ca47b235a"
+            },
+            "owned": {
+              "header": [
+                "Accept",
+                "Content-Type"
+              ],
+              "query": [],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "GET /api/v1/categories/{slug}/",
+          "id": "00c956d1-b726-5686-aa4f-df753c193d6c",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/categories/:slug/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "categories",
+                ":slug",
+                ""
+              ],
+              "variable": [
+                {
+                  "key": "slug",
+                  "value": "string"
+                }
+              ]
+            },
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "Authorization",
+                  "type": "string"
+                },
+                {
+                  "key": "value",
+                  "value": "{{api_key}}",
+                  "type": "string"
+                },
+                {
+                  "key": "in",
+                  "value": "header",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "c2335e0c-5112-5b87-a1ff-72ecbe3ce398",
+              "name": "200",
+              "code": 200,
+              "status": "",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"name\": \"string\",\n  \"slug\": \"string\"\n}",
+              "x-api-contract": {
+                "managed": true,
+                "status": "200",
+                "generated": {
+                  "body": "b1665b8ca47b235a"
+                }
+              }
+            }
+          ],
+          "x-api-contract": {
+            "managed": true,
+            "operation_id": "categories_retrieve",
+            "identity": "GET /api/v1/categories/{slug}/",
+            "method": "GET",
+            "path": "/api/v1/categories/{slug}/",
+            "request_fingerprint": "7f48165acb5c26ae",
+            "response_fingerprint": "de58aeeb0efecacb",
+            "generated": {
+              "name": "521788e4f76cd028",
+              "description": "12ae32cb1ec02d01",
+              "body": "12ae32cb1ec02d01"
+            },
+            "owned": {
+              "header": [
+                "Accept"
+              ],
+              "query": [],
+              "variable": [
+                "slug"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PUT /api/v1/categories/{slug}/",
+          "id": "86dd7b8e-7d5f-50d3-b848-f92586fbe6b5",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/categories/:slug/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "categories",
+                ":slug",
+                ""
+              ],
+              "variable": [
+                {
+                  "key": "slug",
+                  "value": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"string\",\n  \"slug\": \"string\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "Authorization",
+                  "type": "string"
+                },
+                {
+                  "key": "value",
+                  "value": "{{api_key}}",
+                  "type": "string"
+                },
+                {
+                  "key": "in",
+                  "value": "header",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "9b02a4b6-0229-5790-8cd0-72ad0dac7580",
+              "name": "200",
+              "code": 200,
+              "status": "",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"name\": \"string\",\n  \"slug\": \"string\"\n}",
+              "x-api-contract": {
+                "managed": true,
+                "status": "200",
+                "generated": {
+                  "body": "b1665b8ca47b235a"
+                }
+              }
+            }
+          ],
+          "x-api-contract": {
+            "managed": true,
+            "operation_id": "categories_update",
+            "identity": "PUT /api/v1/categories/{slug}/",
+            "method": "PUT",
+            "path": "/api/v1/categories/{slug}/",
+            "request_fingerprint": "970afa8239ece71b",
+            "response_fingerprint": "de58aeeb0efecacb",
+            "generated": {
+              "name": "581dc55ee47084a7",
+              "description": "12ae32cb1ec02d01",
+              "body": "b1665b8ca47b235a"
+            },
+            "owned": {
+              "header": [
+                "Accept",
+                "Content-Type"
+              ],
+              "query": [],
+              "variable": [
+                "slug"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PATCH /api/v1/categories/{slug}/",
+          "id": "c29d8e93-df02-50d5-85b8-2f5dcd5c4396",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/categories/:slug/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "categories",
+                ":slug",
+                ""
+              ],
+              "variable": [
+                {
+                  "key": "slug",
+                  "value": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"string\",\n  \"slug\": \"string\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "Authorization",
+                  "type": "string"
+                },
+                {
+                  "key": "value",
+                  "value": "{{api_key}}",
+                  "type": "string"
+                },
+                {
+                  "key": "in",
+                  "value": "header",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "12892261-695a-595d-9b57-ac49d28673af",
+              "name": "200",
+              "code": 200,
+              "status": "",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"name\": \"string\",\n  \"slug\": \"string\"\n}",
+              "x-api-contract": {
+                "managed": true,
+                "status": "200",
+                "generated": {
+                  "body": "b1665b8ca47b235a"
+                }
+              }
+            }
+          ],
+          "x-api-contract": {
+            "managed": true,
+            "operation_id": "categories_partial_update",
+            "identity": "PATCH /api/v1/categories/{slug}/",
+            "method": "PATCH",
+            "path": "/api/v1/categories/{slug}/",
+            "request_fingerprint": "3644e3e6914ec2fd",
+            "response_fingerprint": "de58aeeb0efecacb",
+            "generated": {
+              "name": "f252c8ad0a456d9c",
+              "description": "12ae32cb1ec02d01",
+              "body": "b1665b8ca47b235a"
+            },
+            "owned": {
+              "header": [
+                "Accept",
+                "Content-Type"
+              ],
+              "query": [],
+              "variable": [
+                "slug"
+              ]
+            }
+          }
+        },
+        {
+          "name": "DELETE /api/v1/categories/{slug}/",
+          "id": "d1f27f03-5ff3-5c53-abf1-9d8194af5486",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/categories/:slug/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "categories",
+                ":slug",
+                ""
+              ],
+              "variable": [
+                {
+                  "key": "slug",
+                  "value": "string"
+                }
+              ]
+            },
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "Authorization",
+                  "type": "string"
+                },
+                {
+                  "key": "value",
+                  "value": "{{api_key}}",
+                  "type": "string"
+                },
+                {
+                  "key": "in",
+                  "value": "header",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "2cc2be32-c268-5cba-8ecb-509b6f436cf4",
+              "name": "204 No response body",
+              "code": 204,
+              "status": "No response body",
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "body": "",
+              "x-api-contract": {
+                "managed": true,
+                "status": "204",
+                "generated": {
+                  "body": "12ae32cb1ec02d01"
+                }
+              }
+            }
+          ],
+          "x-api-contract": {
+            "managed": true,
+            "operation_id": "categories_destroy",
+            "identity": "DELETE /api/v1/categories/{slug}/",
+            "method": "DELETE",
+            "path": "/api/v1/categories/{slug}/",
+            "request_fingerprint": "7f48165acb5c26ae",
+            "response_fingerprint": "99d386848fe29340",
+            "generated": {
+              "name": "d436783f45e0439c",
+              "description": "12ae32cb1ec02d01",
+              "body": "12ae32cb1ec02d01"
+            },
+            "owned": {
+              "header": [],
+              "query": [],
+              "variable": [
+                "slug"
+              ]
+            }
+          }
+        }
+      ],
+      "x-api-contract": {
+        "managed": true,
+        "tag": "categories"
+      }
+    },
+    {
+      "name": "products",
+      "id": "5793b23b-f761-5e0b-ab4a-17217a9148d4",
+      "item": [
+        {
+          "name": "GET /api/v1/products/",
+          "id": "045113a7-d65e-5795-9f29-3ee706b25fd0",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/products/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0",
+                  "description": "A page number within the paginated result set.",
+                  "disabled": true
+                }
+              ]
+            },
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "Authorization",
+                  "type": "string"
+                },
+                {
+                  "key": "value",
+                  "value": "{{api_key}}",
+                  "type": "string"
+                },
+                {
+                  "key": "in",
+                  "value": "header",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "5b0f13e7-5d12-5d9d-8e2a-6cd1e92d3b9d",
+              "name": "200",
+              "code": 200,
+              "status": "",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"count\": 123,\n  \"next\": \"http://api.example.org/accounts/?page=4\",\n  \"previous\": \"http://api.example.org/accounts/?page=2\",\n  \"results\": [\n    {\n      \"category\": {\n        \"name\": \"string\",\n        \"slug\": \"string\"\n      },\n      \"created_at\": \"2024-01-01T00:00:00Z\",\n      \"description\": \"string\",\n      \"name\": \"string\",\n      \"price\": \"0.00\",\n      \"released_on\": \"2024-01-01\",\n      \"sku\": \"string\",\n      \"status\": \"draft\"\n    }\n  ]\n}",
+              "x-api-contract": {
+                "managed": true,
+                "status": "200",
+                "generated": {
+                  "body": "51b89cc1cf342c41"
+                }
+              }
+            }
+          ],
+          "x-api-contract": {
+            "managed": true,
+            "operation_id": "products_list",
+            "identity": "GET /api/v1/products/",
+            "method": "GET",
+            "path": "/api/v1/products/",
+            "request_fingerprint": "2db3f706e1fe72f1",
+            "response_fingerprint": "119d6f464dce1e25",
+            "generated": {
+              "name": "51322034690d5a01",
+              "description": "12ae32cb1ec02d01",
+              "body": "12ae32cb1ec02d01"
+            },
+            "owned": {
+              "header": [
+                "Accept"
+              ],
+              "query": [
+                "page"
+              ],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "POST /api/v1/products/",
+          "id": "fb7cf406-f447-5bf5-ab4d-aed426e9f536",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/products/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_slug\": \"string\",\n  \"description\": \"string\",\n  \"name\": \"string\",\n  \"price\": \"0.00\",\n  \"released_on\": \"2024-01-01\",\n  \"sku\": \"string\",\n  \"status\": \"draft\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "Authorization",
+                  "type": "string"
+                },
+                {
+                  "key": "value",
+                  "value": "{{api_key}}",
+                  "type": "string"
+                },
+                {
+                  "key": "in",
+                  "value": "header",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "95fb918e-8e3d-54e4-af38-f0c5d9030de3",
+              "name": "201",
+              "code": 201,
+              "status": "",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"category\": {\n    \"name\": \"string\",\n    \"slug\": \"string\"\n  },\n  \"created_at\": \"2024-01-01T00:00:00Z\",\n  \"description\": \"string\",\n  \"name\": \"string\",\n  \"price\": \"0.00\",\n  \"released_on\": \"2024-01-01\",\n  \"sku\": \"string\",\n  \"status\": \"draft\"\n}",
+              "x-api-contract": {
+                "managed": true,
+                "status": "201",
+                "generated": {
+                  "body": "7f287a0ecb6b88c9"
+                }
+              }
+            }
+          ],
+          "x-api-contract": {
+            "managed": true,
+            "operation_id": "products_create",
+            "identity": "POST /api/v1/products/",
+            "method": "POST",
+            "path": "/api/v1/products/",
+            "request_fingerprint": "e7c6c1598b2d8171",
+            "response_fingerprint": "798ee074e8328830",
+            "generated": {
+              "name": "98608f88a5d833e3",
+              "description": "12ae32cb1ec02d01",
+              "body": "095b71f22d9862b6"
+            },
+            "owned": {
+              "header": [
+                "Accept",
+                "Content-Type"
+              ],
+              "query": [],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "POST /api/v1/products/import-prices/",
+          "id": "135bc8b5-b0e8-58b9-96ac-68d453cd1f7b",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/products/import-prices/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                "import-prices",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "dry_run",
+                  "type": "text",
+                  "value": "true",
+                  "disabled": true
+                },
+                {
+                  "key": "prices",
+                  "type": "file",
+                  "src": [],
+                  "description": "CSV file with sku,price columns."
+                }
+              ]
+            },
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "Authorization",
+                  "type": "string"
+                },
+                {
+                  "key": "value",
+                  "value": "{{api_key}}",
+                  "type": "string"
+                },
+                {
+                  "key": "in",
+                  "value": "header",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "46b010a4-c9b0-589b-b074-9952b829f8d3",
+              "name": "202",
+              "code": 202,
+              "status": "",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"dry_run\": true,\n  \"prices\": \"https://example.com\"\n}",
+              "x-api-contract": {
+                "managed": true,
+                "status": "202",
+                "generated": {
+                  "body": "2f0dc8cb08e87246"
+                }
+              }
+            }
+          ],
+          "x-api-contract": {
+            "managed": true,
+            "operation_id": "products-import-prices",
+            "identity": "POST /api/v1/products/import-prices/",
+            "method": "POST",
+            "path": "/api/v1/products/import-prices/",
+            "request_fingerprint": "ec8a31f1d4d60cc5",
+            "response_fingerprint": "8be40375bc424d59",
+            "generated": {
+              "name": "c3fdb2cd0abb8670",
+              "description": "12ae32cb1ec02d01",
+              "body": "12ae32cb1ec02d01"
+            },
+            "owned": {
+              "header": [
+                "Accept"
+              ],
+              "query": [],
+              "variable": [],
+              "formdata": [
+                "dry_run",
+                "prices"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /api/v1/products/{sku}/",
+          "id": "265279c0-8d96-529d-948c-947b7eace4ef",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/products/:sku/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                ":sku",
+                ""
+              ],
+              "variable": [
+                {
+                  "key": "sku",
+                  "value": "string"
+                }
+              ]
+            },
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "Authorization",
+                  "type": "string"
+                },
+                {
+                  "key": "value",
+                  "value": "{{api_key}}",
+                  "type": "string"
+                },
+                {
+                  "key": "in",
+                  "value": "header",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "c9f14fee-ad3a-557d-ade8-33d3179f94d6",
+              "name": "200",
+              "code": 200,
+              "status": "",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"category\": {\n    \"name\": \"string\",\n    \"slug\": \"string\"\n  },\n  \"created_at\": \"2024-01-01T00:00:00Z\",\n  \"description\": \"string\",\n  \"name\": \"string\",\n  \"price\": \"0.00\",\n  \"released_on\": \"2024-01-01\",\n  \"sku\": \"string\",\n  \"status\": \"draft\"\n}",
+              "x-api-contract": {
+                "managed": true,
+                "status": "200",
+                "generated": {
+                  "body": "7f287a0ecb6b88c9"
+                }
+              }
+            }
+          ],
+          "x-api-contract": {
+            "managed": true,
+            "operation_id": "products_retrieve",
+            "identity": "GET /api/v1/products/{sku}/",
+            "method": "GET",
+            "path": "/api/v1/products/{sku}/",
+            "request_fingerprint": "7f48165acb5c26ae",
+            "response_fingerprint": "e80b980bec31e0ac",
+            "generated": {
+              "name": "f2a336d2ba7f3521",
+              "description": "12ae32cb1ec02d01",
+              "body": "12ae32cb1ec02d01"
+            },
+            "owned": {
+              "header": [
+                "Accept"
+              ],
+              "query": [],
+              "variable": [
+                "sku"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PUT /api/v1/products/{sku}/",
+          "id": "c382dcdd-71e2-56f4-b2db-5dcbaf8008f1",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/products/:sku/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                ":sku",
+                ""
+              ],
+              "variable": [
+                {
+                  "key": "sku",
+                  "value": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_slug\": \"string\",\n  \"description\": \"string\",\n  \"name\": \"string\",\n  \"price\": \"0.00\",\n  \"released_on\": \"2024-01-01\",\n  \"sku\": \"string\",\n  \"status\": \"draft\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "Authorization",
+                  "type": "string"
+                },
+                {
+                  "key": "value",
+                  "value": "{{api_key}}",
+                  "type": "string"
+                },
+                {
+                  "key": "in",
+                  "value": "header",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "75e65849-bb7c-5962-bd09-9562192123f3",
+              "name": "200",
+              "code": 200,
+              "status": "",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"category\": {\n    \"name\": \"string\",\n    \"slug\": \"string\"\n  },\n  \"created_at\": \"2024-01-01T00:00:00Z\",\n  \"description\": \"string\",\n  \"name\": \"string\",\n  \"price\": \"0.00\",\n  \"released_on\": \"2024-01-01\",\n  \"sku\": \"string\",\n  \"status\": \"draft\"\n}",
+              "x-api-contract": {
+                "managed": true,
+                "status": "200",
+                "generated": {
+                  "body": "7f287a0ecb6b88c9"
+                }
+              }
+            }
+          ],
+          "x-api-contract": {
+            "managed": true,
+            "operation_id": "products_update",
+            "identity": "PUT /api/v1/products/{sku}/",
+            "method": "PUT",
+            "path": "/api/v1/products/{sku}/",
+            "request_fingerprint": "852b03dca4b3f5f5",
+            "response_fingerprint": "e80b980bec31e0ac",
+            "generated": {
+              "name": "c55cf435c7bdf5b7",
+              "description": "12ae32cb1ec02d01",
+              "body": "095b71f22d9862b6"
+            },
+            "owned": {
+              "header": [
+                "Accept",
+                "Content-Type"
+              ],
+              "query": [],
+              "variable": [
+                "sku"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PATCH /api/v1/products/{sku}/",
+          "id": "69223b5f-0ba4-5973-82cd-4fbbc8978b87",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/products/:sku/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                ":sku",
+                ""
+              ],
+              "variable": [
+                {
+                  "key": "sku",
+                  "value": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category_slug\": \"string\",\n  \"description\": \"string\",\n  \"name\": \"string\",\n  \"price\": \"0.00\",\n  \"released_on\": \"2024-01-01\",\n  \"sku\": \"string\",\n  \"status\": \"draft\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "Authorization",
+                  "type": "string"
+                },
+                {
+                  "key": "value",
+                  "value": "{{api_key}}",
+                  "type": "string"
+                },
+                {
+                  "key": "in",
+                  "value": "header",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "727b9b3c-96f3-5ebd-b72d-814ecc4a2974",
+              "name": "200",
+              "code": 200,
+              "status": "",
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"category\": {\n    \"name\": \"string\",\n    \"slug\": \"string\"\n  },\n  \"created_at\": \"2024-01-01T00:00:00Z\",\n  \"description\": \"string\",\n  \"name\": \"string\",\n  \"price\": \"0.00\",\n  \"released_on\": \"2024-01-01\",\n  \"sku\": \"string\",\n  \"status\": \"draft\"\n}",
+              "x-api-contract": {
+                "managed": true,
+                "status": "200",
+                "generated": {
+                  "body": "7f287a0ecb6b88c9"
+                }
+              }
+            }
+          ],
+          "x-api-contract": {
+            "managed": true,
+            "operation_id": "products_partial_update",
+            "identity": "PATCH /api/v1/products/{sku}/",
+            "method": "PATCH",
+            "path": "/api/v1/products/{sku}/",
+            "request_fingerprint": "9396fc3fde55d5ed",
+            "response_fingerprint": "e80b980bec31e0ac",
+            "generated": {
+              "name": "67bfc6db7b17aadd",
+              "description": "12ae32cb1ec02d01",
+              "body": "095b71f22d9862b6"
+            },
+            "owned": {
+              "header": [
+                "Accept",
+                "Content-Type"
+              ],
+              "query": [],
+              "variable": [
+                "sku"
+              ]
+            }
+          }
+        },
+        {
+          "name": "DELETE /api/v1/products/{sku}/",
+          "id": "9637073d-cee0-5d82-9f74-7cf879af6c3b",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/products/:sku/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "products",
+                ":sku",
+                ""
+              ],
+              "variable": [
+                {
+                  "key": "sku",
+                  "value": "string"
+                }
+              ]
+            },
+            "auth": {
+              "type": "apikey",
+              "apikey": [
+                {
+                  "key": "key",
+                  "value": "Authorization",
+                  "type": "string"
+                },
+                {
+                  "key": "value",
+                  "value": "{{api_key}}",
+                  "type": "string"
+                },
+                {
+                  "key": "in",
+                  "value": "header",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "7d1df5d2-e26a-56d2-8915-0efa7b7872eb",
+              "name": "204 No response body",
+              "code": 204,
+              "status": "No response body",
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "body": "",
+              "x-api-contract": {
+                "managed": true,
+                "status": "204",
+                "generated": {
+                  "body": "12ae32cb1ec02d01"
+                }
+              }
+            }
+          ],
+          "x-api-contract": {
+            "managed": true,
+            "operation_id": "products_destroy",
+            "identity": "DELETE /api/v1/products/{sku}/",
+            "method": "DELETE",
+            "path": "/api/v1/products/{sku}/",
+            "request_fingerprint": "7f48165acb5c26ae",
+            "response_fingerprint": "99d386848fe29340",
+            "generated": {
+              "name": "a51212285335d92f",
+              "description": "12ae32cb1ec02d01",
+              "body": "12ae32cb1ec02d01"
+            },
+            "owned": {
+              "header": [],
+              "query": [],
+              "variable": [
+                "sku"
+              ]
+            }
+          }
+        }
+      ],
+      "x-api-contract": {
+        "managed": true,
+        "tag": "products"
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    }
+  ],
+  "x-api-contract": {
+    "managed": true,
+    "openapi_version": "1.0.0"
+  },
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "Authorization",
+        "type": "string"
+      },
+      {
+        "key": "value",
+        "value": "{{api_key}}",
+        "type": "string"
+      },
+      {
+        "key": "in",
+        "value": "header",
+        "type": "string"
+      }
+    ]
+  }
+}
