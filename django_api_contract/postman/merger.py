@@ -239,9 +239,13 @@ def merge_request_item(
             generated_request["description"] = existing_request["description"]
             notes.append("description")
 
-    if existing_request.get("auth"):
-        generated_request["auth"] = existing_request["auth"]
+    existing_auth = existing_request.get("auth")
+    if existing_auth and was_edited(existing, "auth", existing_auth):
+        generated_request["auth"] = existing_auth
         notes.append("auth")
+    elif existing_auth and "auth" not in generated_request:
+        # No recorded hash means the entry predates this metadata, so keep it.
+        generated_request["auth"] = existing_auth
 
     merged["request"] = generated_request
 

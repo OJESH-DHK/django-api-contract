@@ -297,6 +297,7 @@ def build_request_item(
                 "name": content_hash(name),
                 "description": content_hash(request.get("description", "")),
                 "body": content_hash(_raw_body(request)),
+                "auth": content_hash(request.get("auth", {})),
             },
             # Keys this package put there. Anything in the file outside these
             # lists was added by hand and is left alone; anything inside them
