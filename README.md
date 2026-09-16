@@ -228,6 +228,9 @@ ruff check django_api_contract tests
 mypy django_api_contract
 ```
 
+Releases are published from GitHub Actions through PyPI trusted publishing.
+See [docs/releasing.md](docs/releasing.md).
+
 ## License
 
 MIT. See [LICENSE](LICENSE).
