@@ -298,9 +298,27 @@ def build_request_item(
                 "description": content_hash(request.get("description", "")),
                 "body": content_hash(_raw_body(request)),
             },
+            # Keys this package put there. Anything in the file outside these
+            # lists was added by hand and is left alone; anything inside them
+            # that the schema no longer produces is dropped.
+            "owned": _owned_keys(request),
         },
     }
     return item
+
+
+def _owned_keys(request: Dict[str, Any]) -> Dict[str, List[str]]:
+    url = request.get("url") or {}
+    body = request.get("body") or {}
+    owned = {
+        "header": [entry["key"] for entry in request.get("header", [])],
+        "query": [entry["key"] for entry in url.get("query", [])],
+        "variable": [entry["key"] for entry in url.get("variable", [])],
+    }
+    mode = body.get("mode")
+    if mode in {"formdata", "urlencoded"}:
+        owned[mode] = [entry["key"] for entry in body.get(mode, [])]
+    return owned
 
 
 def _raw_body(request: Dict[str, Any]) -> Any:

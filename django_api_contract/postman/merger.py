@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from ..conf import ContractSettings
 from ..constants import METADATA_KEY
@@ -30,6 +30,11 @@ def _generated_hash(node: Dict[str, Any], field: str) -> Optional[str]:
     return metadata(node).get("generated", {}).get(field)
 
 
+def owned_keys(node: Dict[str, Any], section: str) -> List[str]:
+    values = metadata(node).get("owned", {}).get(section)
+    return [str(value) for value in values] if isinstance(values, list) else []
+
+
 def was_edited(existing: Dict[str, Any], field: str, current_value: Any) -> bool:
     """True when the value on disk differs from what this package last wrote.
 
@@ -43,16 +48,20 @@ def was_edited(existing: Dict[str, Any], field: str, current_value: Any) -> bool
 
 
 def merge_keyed_list(
-    generated: List[Dict[str, Any]], existing: Optional[List[Dict[str, Any]]]
+    generated: List[Dict[str, Any]],
+    existing: Optional[List[Dict[str, Any]]],
+    previously_owned: Optional[Iterable[str]] = None,
 ) -> List[Dict[str, Any]]:
     """Merge header / query / form entries without duplicating keys.
 
     Structure (which keys exist, their descriptions) comes from the schema.
     Values and enabled/disabled toggles are environment specific, so an
-    existing entry keeps them. Entries the schema no longer knows about are
-    appended untouched.
+    existing entry keeps them. An entry this package generated on an earlier
+    run but no longer generates is dropped; anything else is a manual addition
+    and is kept.
     """
     existing = existing or []
+    owned = set(previously_owned or [])
     by_key: Dict[str, Dict[str, Any]] = {}
     for entry in existing:
         if isinstance(entry, dict) and entry.get("key") is not None:
@@ -73,32 +82,38 @@ def merge_keyed_list(
                 combined[field] = previous[field]
         merged.append(combined)
 
+    generated_keys = {str(entry.get("key", "")) for entry in generated}
     for entry in existing:
         if not isinstance(entry, dict):
             continue
         key = str(entry.get("key", ""))
-        if key not in used and key not in {str(e.get("key", "")) for e in generated}:
-            merged.append(entry)
+        if key in used or key in generated_keys:
+            continue
+        if key in owned:
+            continue
+        merged.append(entry)
 
     return merged
 
 
-def _merge_url(generated: Dict[str, Any], existing: Any) -> Dict[str, Any]:
+def _merge_url(
+    generated: Dict[str, Any], existing: Any, existing_item: Dict[str, Any]
+) -> Dict[str, Any]:
     if not isinstance(existing, dict):
         return generated
     merged = dict(generated)
-    if "query" in generated or "query" in existing:
-        query = merge_keyed_list(generated.get("query", []), existing.get("query"))
-        if query:
-            merged["query"] = query
+    for section in ("query", "variable"):
+        if section not in generated and section not in existing:
+            continue
+        entries = merge_keyed_list(
+            generated.get(section, []),
+            existing.get(section),
+            owned_keys(existing_item, section),
+        )
+        if entries:
+            merged[section] = entries
         else:
-            merged.pop("query", None)
-    if "variable" in generated or "variable" in existing:
-        variables = merge_keyed_list(generated.get("variable", []), existing.get("variable"))
-        if variables:
-            merged["variable"] = variables
-        else:
-            merged.pop("variable", None)
+            merged.pop(section, None)
     return merged
 
 
@@ -126,7 +141,9 @@ def _merge_body(
 
     if mode in {"formdata", "urlencoded"}:
         merged = dict(generated)
-        merged[mode] = merge_keyed_list(generated.get(mode, []), existing.get(mode))
+        merged[mode] = merge_keyed_list(
+            generated.get(mode, []), existing.get(mode), owned_keys(existing_item, mode)
+        )
         return merged, False
 
     return generated, False
@@ -197,10 +214,12 @@ def merge_request_item(
     existing_request = existing.get("request") if isinstance(existing.get("request"), dict) else {}
 
     generated_request["header"] = merge_keyed_list(
-        generated_request.get("header", []), existing_request.get("header")
+        generated_request.get("header", []),
+        existing_request.get("header"),
+        owned_keys(existing, "header"),
     )
     generated_request["url"] = _merge_url(
-        generated_request.get("url", {}), existing_request.get("url")
+        generated_request.get("url", {}), existing_request.get("url"), existing
     )
 
     body, body_preserved = _merge_body(
