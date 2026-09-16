@@ -66,6 +66,11 @@ def _breaking_line(change: Change) -> str:
     return f"{change.endpoint}: {change.detail}"
 
 
+def _counts(rows: List[tuple]) -> List[str]:
+    width = max((len(label) for label, _ in rows), default=0) + 1
+    return [f"  {label + ':':<{width + 1}} {value}" for label, value in rows]
+
+
 def render_sync_summary(
     diff: ContractDiff,
     sync: Any,
@@ -74,22 +79,30 @@ def render_sync_summary(
     openapi_path: Optional[str] = None,
     postman_path: Optional[str] = None,
 ) -> str:
-    verb = "Would" if dry_run else ""
     out: List[str] = ["API Contract Synchronization", ""]
 
     out.append("OpenAPI:")
-    out.append(f"  Added:    {len(diff.added_endpoints)}")
-    out.append(f"  Changed:  {len(diff.changed_endpoints)}")
-    out.append(f"  Removed:  {len(diff.removed_endpoints)}")
+    out += _counts(
+        [
+            ("Added", len(diff.added_endpoints)),
+            ("Changed", len(diff.changed_endpoints)),
+            ("Removed", len(diff.removed_endpoints)),
+        ]
+    )
     out.append("")
 
+    prefix = "Would " if dry_run else ""
     out.append("Postman:")
-    out.append(f"  {verb + ' create' if dry_run else 'Created'}:   {len(sync.created)}")
-    out.append(f"  {verb + ' update' if dry_run else 'Updated'}:   {len(sync.updated)}")
-    out.append(f"  Unchanged: {len(sync.unchanged)}")
-    out.append(f"  Preserved: {len(sync.preserved_manual)} manual request(s)")
-    out.append(f"  Archived:  {len(sync.archived)}")
-    out.append(f"  Removed:   {len(sync.removed)}")
+    out += _counts(
+        [
+            (f"{prefix}create" if dry_run else "Created", len(sync.created)),
+            (f"{prefix}update" if dry_run else "Updated", len(sync.updated)),
+            ("Unchanged", len(sync.unchanged)),
+            (f"{prefix}preserve" if dry_run else "Preserved", len(sync.preserved_manual)),
+            (f"{prefix}archive" if dry_run else "Archived", len(sync.archived)),
+            (f"{prefix}remove" if dry_run else "Removed", len(sync.removed)),
+        ]
+    )
     out.append("")
 
     if sync.renamed:
